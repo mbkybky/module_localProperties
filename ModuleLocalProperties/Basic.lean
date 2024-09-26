@@ -71,3 +71,23 @@ lemma LinearMap.localized'_range_eq_range_localizedMap (g : M →ₗ[R] P) :
     obtain ⟨m, hm⟩ := IsLocalizedModule.surj p f n
     exact ⟨(g m.1), mem_range_self g m.1, m.2, by
       rw [← hn, extendScalarsOfIsLocalization_apply', ← mk'_eq_iff.mpr hm.symm, map_mk']⟩
+
+noncomputable def LocalizedModule.map {R M M' : Type*} [CommRing R] [AddCommGroup M] [Module R M]
+[AddCommGroup M'] [Module R M'] (S : Submonoid R) :
+  (M →ₗ[R] M') →ₗ[R] (LocalizedModule S M) →ₗ[R] (LocalizedModule S M') :=
+    IsLocalizedModule.map S (mkLinearMap S M) (mkLinearMap S M')
+
+lemma exact_of_localization {R M₀ M₁ M₂ : Type*} [CommRing R] [AddCommGroup M₀] [Module R M₀]
+[AddCommGroup M₁] [Module R M₁] [AddCommGroup M₂] [Module R M₂] (f : M₀ →ₗ[R] M₁) (g : M₁ →ₗ[R] M₂)
+(h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Function.Exact
+  ((map J.primeCompl f).extendScalarsOfIsLocalization J.primeCompl (Localization J.primeCompl))
+  ((map J.primeCompl g).extendScalarsOfIsLocalization J.primeCompl (Localization J.primeCompl))) :
+    Function.Exact f g := by
+  rw [LinearMap.exact_iff]
+  simp only [LinearMap.exact_iff] at h
+  apply submodule_eq_of_localization
+  intro J hJ
+  unfold localized
+  rw [LinearMap.localized'_range_eq_range_localizedMap _ (mkLinearMap J.primeCompl M₀),
+    LinearMap.localized'_ker_eq_ker_localizedMap _ _ _ (mkLinearMap J.primeCompl M₂)]
+  exact h J hJ
