@@ -1,4 +1,10 @@
-import Mathlib
+/-
+Copyright (c) 2024 Yongle Hu. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Yongle Hu, Sihan Su
+-/
+import Mathlib.Algebra.Module.Submodule.Localization
+import Mathlib.RingTheory.Localization.AtPrime
 
 open Submodule IsLocalizedModule LocalizedModule
 
