@@ -6,6 +6,8 @@ Authors: Yongle Hu
 import Mathlib.Algebra.Module.LocalizedModule
 import Mathlib.RingTheory.Localization.AtPrime
 
+import Mathlib.RingTheory.LocalProperties.Basic
+
 /-!
 # Local properties of modules
 
@@ -29,12 +31,15 @@ section Module
 
 variable (P : ∀ {R : Type u} [CommRing R] (M : Type v) [AddCommGroup M] [Module R M], Prop)
 
+#check LocalizationPreserves
+
 def IsLocalizedModulePreserves : Prop :=
   ∀ {R : Type u} (S : Type u) {M N : Type v} [CommRing R] [CommRing S] [AddCommGroup M]
   [AddCommGroup N] [Module R M] [Module R N] [Algebra R S] [Module S N] [IsScalarTower R S N]
   (p : Submonoid R) [IsLocalization p S] (f : M →ₗ[R] N) [IsLocalizedModule p f],
   @P R _ M _ _ → @P S _ N _ _
-/-
+
+/- -- need to fix the issue of universe hierarchy
 def LocalizedModulePreserves : Prop :=
   ∀ {R : Type u} (S : Type u) {M N : Type v} [CommRing R] [CommRing S] [AddCommGroup M] [Module R M]
   (p : Submonoid R),
