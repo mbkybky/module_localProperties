@@ -6,7 +6,7 @@ Authors: Yongle Hu, Sihan Su
 import Mathlib.Algebra.Module.Submodule.Localization
 import Mathlib.RingTheory.Localization.AtPrime
 
-open Submodule IsLocalizedModule LocalizedModule
+open Submodule IsLocalizedModule LocalizedModule Ideal
 
 abbrev IsLocalizedModule.AtPrime {R M M': Type*} [CommSemiring R] (J : Ideal R) [J.IsPrime] [AddCommMonoid M] [AddCommMonoid M'] [Module R M] [Module R M'] (f : M →ₗ[R] M'):=
   IsLocalizedModule J.primeCompl f
@@ -19,29 +19,29 @@ lemma eq_zero_of_localization_module {R M : Type*} [CommSemiring R] [AddCommMono
     x = 0 := by
   rw [← span_singleton_eq_bot (R := R), ← annihilator_eq_top_iff]
   by_contra H
-  obtain ⟨m, maxm, lem⟩ := Ideal.exists_le_maximal _ H
+  obtain ⟨m, maxm, lem⟩ := exists_le_maximal _ H
   obtain ⟨s, hs⟩ := (mk'_eq_zero' _ _ ).mp
     ((mk_eq_mk' (1 : m.primeCompl) x) ▸ (mkLinearMap_apply m.primeCompl M x) ▸ (h m maxm))
   exact s.2 (lem ((mem_annihilator_span_singleton x s.1).mpr hs))
 
 lemma module_eq_zero_of_localization {R M : Type*} [CommSemiring R] [AddCommMonoid M] [Module R M]
-(h : ∀ (J : Ideal R) (_ : J.IsMaximal), Subsingleton (LocalizedModule.AtPrime J M)) :
+(h : ∀ (J : Ideal R) (_ : J.IsMaximal), Subsingleton (AtPrime J M)) :
 Subsingleton M :=  subsingleton_of_forall_eq 0 fun x ↦ eq_zero_of_localization_module
-  fun J maxJ ↦ (@Subsingleton.eq_zero _ _ (h J maxJ) (LocalizedModule.mk x 1))
+  fun J maxJ ↦ (@Subsingleton.eq_zero _ _ (h J maxJ) (mk x 1))
 
-lemma submodule_le_of_localization {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] (N : Submodule R M) (P : Submodule R M) (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Submodule.localized J.primeCompl N ≤ Submodule.localized J.primeCompl P) : N ≤ P := by
+lemma submodule_le_of_localization {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] (N : Submodule R M) (P : Submodule R M) (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), localized J.primeCompl N ≤ localized J.primeCompl P) : N ≤ P := by
   by_contra nle
   obtain ⟨n, hn, hp⟩ := Set.not_subset.mp nle
-  set I := P.colon (Submodule.span R {n})
-  obtain ⟨m ,maxm, lem⟩ := Ideal.exists_le_maximal _ ((Ideal.ne_top_iff_one _).mpr
-    fun H ↦ (one_smul R n ▸ hp) (Submodule.mem_colon_singleton.mp H))
+  set I := P.colon (span R {n})
+  obtain ⟨m ,maxm, lem⟩ := exists_le_maximal _ ((ne_top_iff_one _).mpr
+    fun H ↦ (one_smul R n ▸ hp) (mem_colon_singleton.mp H))
   have mem : (mkLinearMap m.primeCompl M) n ∈ localized m.primeCompl N := by
-    simp only [mkLinearMap_apply, Submodule.mem_localized']
+    simp only [mkLinearMap_apply, mem_localized']
     exact ⟨n, hn, 1, by rw [mk'_one, mkLinearMap_apply]⟩
   apply (h m maxm) at mem
-  simp only [mkLinearMap_apply, Submodule.mem_localized', mk_eq_mk'] at mem
+  simp only [mkLinearMap_apply, mem_localized', mk_eq_mk'] at mem
   obtain ⟨p, inp, s, hs⟩ := mem
-  obtain ⟨s', eq⟩ := (IsLocalizedModule.mk'_eq_mk'_iff _ p n s 1).mp hs
+  obtain ⟨s', eq⟩ := (mk'_eq_mk'_iff _ p n s 1).mp hs
   simp only [one_smul, smul_smul] at eq
   have h1 : (s'.1 * s.1) ∈ I := by
     unfold_let
@@ -52,10 +52,11 @@ lemma submodule_le_of_localization {R M : Type*} [CommRing R] [AddCommGroup M] [
 
 lemma submodule_eq_of_localization {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M]
 (N : Submodule R M) (P : Submodule R M) (h : ∀ (J : Ideal R) (_ : J.IsMaximal),
-Submodule.localized J.primeCompl N = Submodule.localized J.primeCompl P) : N = P :=
+localized J.primeCompl N = localized J.primeCompl P) : N = P :=
   eq_of_le_of_le (submodule_le_of_localization _ _ (fun J hJ ↦ le_of_eq (h J hJ)))
   (submodule_le_of_localization _ _ (fun J hJ ↦ le_of_eq (h J hJ).symm))
 
+section range
 variable {R S : Type*} [CommRing R] [CommRing S] [Algebra R S]
   (p : Submonoid R) [IsLocalization p S]
 variable {M N : Type*} [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] [Module S N]
@@ -64,19 +65,20 @@ variable {P Q : Type*} [AddCommGroup P] [Module R P] [AddCommGroup Q] [Module R 
   [IsScalarTower R S Q] (f' : P →ₗ[R] Q) [IsLocalizedModule p f']
 
 lemma LinearMap.localized'_range_eq_range_localizedMap (g : M →ₗ[R] P) :
-    Submodule.localized' S p f' (LinearMap.range g) =
-      LinearMap.range ((IsLocalizedModule.map p f f' g).extendScalarsOfIsLocalization p S) := by
+    localized' S p f' (LinearMap.range g) =
+      LinearMap.range ((map p f f' g).extendScalarsOfIsLocalization p S) := by
   ext x
-  simp only [Submodule.mem_localized', extendScalarsOfIsLocalization_apply']
+  simp only [mem_localized', extendScalarsOfIsLocalization_apply']
   constructor
   · rintro ⟨r, hr, a, ha⟩
     obtain ⟨m, hm⟩ := mem_range.mp hr
     exact ⟨(mk' f m a), by rw [extendScalarsOfIsLocalization_apply', map_mk', hm, ha]⟩
   · intro h
     obtain ⟨n, hn⟩ := mem_range.mp h
-    obtain ⟨m, hm⟩ := IsLocalizedModule.surj p f n
+    obtain ⟨m, hm⟩ := surj p f n
     exact ⟨(g m.1), mem_range_self g m.1, m.2, by
       rw [← hn, extendScalarsOfIsLocalization_apply', ← mk'_eq_iff.mpr hm.symm, map_mk']⟩
+end range
 
 noncomputable def LocalizedModule.map {R M M' : Type*} [CommRing R] [AddCommGroup M] [Module R M]
 [AddCommGroup M'] [Module R M'] (S : Submonoid R) :
@@ -97,3 +99,65 @@ lemma exact_of_localization {R M₀ M₁ M₂ : Type*} [CommRing R] [AddCommGrou
   rw [LinearMap.localized'_range_eq_range_localizedMap _ (mkLinearMap J.primeCompl M₀),
     LinearMap.localized'_ker_eq_ker_localizedMap _ _ _ (mkLinearMap J.primeCompl M₂)]
   exact h J hJ
+
+abbrev IsLocalizedModule.away {R M M': Type*} [CommSemiring R] (x : R) [AddCommMonoid M] [Module R M] [AddCommMonoid M'] [Module R M'] (f : M →ₗ[R] M') := IsLocalizedModule (Submonoid.powers x) f
+
+abbrev LocalizedModule.away {R : Type*} [CommSemiring R] (x : R) (M : Type*) [AddCommMonoid M] [Module R M]:= LocalizedModule (Submonoid.powers x) M
+
+lemma eq_zero_of_localization_finitespan {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] (x : M) (s : Finset R) (spn : span (s : Set R) = ⊤) (h : ∀ r : s, (mkLinearMap (Submonoid.powers r.1) M ) x = 0) : x = 0 := by
+  rw [← span_singleton_eq_bot (R := R), ← annihilator_eq_top_iff]
+  by_contra! H
+  obtain ⟨m, maxm, lem⟩ := exists_le_maximal _ H
+  have exr : ∃ r : s, r.1 ∉ m := by
+    by_contra! H
+    exact maxm.ne_top (top_le_iff.mp (spn ▸ (Ideal.span_le.mpr (Subtype.forall.mp H))))
+  obtain ⟨r, nm⟩ := exr
+  obtain ⟨s, hs⟩ := (mk'_eq_zero' _ _ ).mp ((mk_eq_mk' (1 : Submonoid.powers r.1) x)
+    ▸ (mkLinearMap_apply (Submonoid.powers r.1) M x) ▸ (h r))
+  obtain ⟨n, hn⟩ := (Submonoid.mem_powers_iff _ _).mp s.2
+  exact nm (maxm.isPrime.mem_of_pow_mem n (lem ((mem_annihilator_span_singleton x (r.1 ^ n)).mpr
+    (hn ▸ hs))))
+
+lemma submodule_le_of_localization_finitespan {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] (N : Submodule R M) (P : Submodule R M) (s : Finset R) (spn : span (s : Set R) = ⊤) (h : ∀ r : s, localized (Submonoid.powers r.1) N ≤ localized (Submonoid.powers r.1) P) : N ≤ P := by
+  by_contra nle
+  obtain ⟨n, hn, hp⟩ := Set.not_subset.mp nle
+  set I := P.colon (span R {n})
+  obtain ⟨m ,maxm, lem⟩ := exists_le_maximal _ ((ne_top_iff_one _).mpr
+    fun H ↦ (one_smul R n ▸ hp) (mem_colon_singleton.mp H))
+  have exr : ∃ r : s, r.1 ∉ m := by
+    by_contra! H
+    exact maxm.ne_top (top_le_iff.mp (spn ▸ (Ideal.span_le.mpr (Subtype.forall.mp H))))
+  obtain ⟨r, nm⟩ := exr
+  have mem : (mkLinearMap (Submonoid.powers r.1) M) n ∈ localized (Submonoid.powers r.1) N := by
+    simp only [mkLinearMap_apply, mem_localized']
+    exact ⟨n, hn, 1, by rw [mk'_one, mkLinearMap_apply]⟩
+  apply (h r) at mem
+  simp only [mkLinearMap_apply, mem_localized', mk_eq_mk'] at mem
+  obtain ⟨p, inp, s, hs⟩ := mem
+  obtain ⟨s', eq⟩ := (mk'_eq_mk'_iff _ p n s 1).mp hs
+  simp only [one_smul, smul_smul] at eq
+  have h1 : (s' * s).1 ∈ I := by
+    unfold_let
+    have : (s'.1 * s.1) • n = (s' * s) • n := rfl
+    rw [Submonoid.coe_mul, Submodule.mem_colon_singleton, this, eq]
+    exact smul_mem P ((Submonoid.powers r.1).subtype s') inp
+  obtain ⟨k, hk⟩ := (Submonoid.mem_powers_iff _ _).mp (s' * s).2
+  exact nm (maxm.isPrime.mem_of_pow_mem k (hk ▸ (lem h1)))
+
+lemma submodule_eq_of_localization_finitespan {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] (N : Submodule R M) (P : Submodule R M) (s : Finset R) (spn : span (s : Set R) = ⊤) (h : ∀ r : s, localized (Submonoid.powers r.1) N = localized (Submonoid.powers r.1) P) : N = P :=
+  eq_of_le_of_le (submodule_le_of_localization_finitespan _ _ s spn (fun r ↦ le_of_eq (h r)))
+  (submodule_le_of_localization_finitespan _ _ s spn (fun r ↦ le_of_eq (h r).symm))
+
+lemma exact_of_localization_finitespan {R M₀ M₁ M₂ : Type*} [CommRing R] [AddCommGroup M₀] [Module R M₀] [AddCommGroup M₁] [Module R M₁] [AddCommGroup M₂] [Module R M₂] (s : Finset R) (spn : span (s : Set R) = ⊤) (f : M₀ →ₗ[R] M₁) (g : M₁ →ₗ[R] M₂) (h : ∀ r : s, Function.Exact
+  ((map (Submonoid.powers r.1) f).extendScalarsOfIsLocalization (Submonoid.powers r.1) (Localization (Submonoid.powers r.1)))
+  ((map (Submonoid.powers r.1) g).extendScalarsOfIsLocalization (Submonoid.powers r.1) (Localization (Submonoid.powers r.1)))) :
+    Function.Exact f g := by
+  rw [LinearMap.exact_iff]
+  simp only [LinearMap.exact_iff] at h
+  apply submodule_eq_of_localization_finitespan
+  exact spn
+  intro r
+  unfold localized
+  rw [LinearMap.localized'_range_eq_range_localizedMap _ (mkLinearMap (Submonoid.powers r.1) M₀),
+    LinearMap.localized'_ker_eq_ker_localizedMap _ _ _ (mkLinearMap (Submonoid.powers r.1) M₂)]
+  exact h r
