@@ -15,17 +15,18 @@ noncomputable def LinearEquiv.extendScalarsOfIsLocalization {R M N : Type*} [Com
   (Function.bijective_iff_has_inverse.mpr ⟨f.symm, Function.leftInverse_iff_comp.mpr
   ((symm_comp_eq id f).mpr rfl), Function.rightInverse_iff_comp.mpr ((comp_symm_eq id f).mpr rfl)⟩)
 
+noncomputable def submodule_localization_equiv {R M : Type*} [CommRing R] [AddCommGroup M]
+    [Module R M] (N : Submodule R M) (S : Submonoid R) :
+    (localized S N) ≃ₗ[Localization S] LocalizedModule S N :=
+  (iso S (Submodule.toLocalized S N)).symm.extendScalarsOfIsLocalization S (Localization S)
+
 lemma submodule.of_localizationSpan_finite {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M]
     (N : Submodule R M) (s : Finset R) (spn : span (s : Set R) = ⊤)
     (H : ∀ (g : s), (localized (Submonoid.powers g.1) N).FG) : N.FG := by
-  apply Module.Finite.iff_fg.mp
-  apply Module.Finite.of_localizationSpan_finite s spn
+  apply Module.Finite.iff_fg.mp (Module.Finite.of_localizationSpan_finite s spn ?_)
   intro g
   letI := Module.Finite.iff_fg.mpr (H g)
-  set e' := (iso (Submonoid.powers g.1)
-    (Submodule.toLocalized (Submonoid.powers g.1) N)).symm.extendScalarsOfIsLocalization
-    (Submonoid.powers g.1) (Localization (Submonoid.powers g.1))
-  exact Module.Finite.equiv e'
+  exact Module.Finite.equiv (submodule_localization_equiv N _)
 
 lemma finitepresented_of_localization_fintespan {R M : Type*} [CommRing R] [AddCommGroup M]
     [Module R M] (s : Finset R) (spn : span (s : Set R) = ⊤) (h : ∀ r : s,
