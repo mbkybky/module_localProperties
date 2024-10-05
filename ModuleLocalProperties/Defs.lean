@@ -3,8 +3,9 @@ Copyright (c) 2024 Yongle Hu. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yongle Hu
 -/
-import Mathlib.Algebra.Module.LocalizedModule
 import Mathlib.RingTheory.Localization.AtPrime
+import Mathlib.RingTheory.Localization.Module
+import Mathlib.Algebra.Category.ModuleCat.Basic
 
 /-!
 # Local properties of modules
@@ -13,7 +14,7 @@ In this file, we define local properties of modules in general.
 
 -/
 
-universe u v
+universe u v v'
 
 protected abbrev IsLocalizedModule.AtPrime {R M M': Type*} [CommSemiring R] (J : Ideal R)
     [J.IsPrime] [AddCommMonoid M] [AddCommMonoid M'] [Module R M] [Module R M'] (f : M →ₗ[R] M'):=
@@ -55,16 +56,15 @@ section LocalizedModule
 variable (P : ∀ (R : Type u) [CommRing R] (M : Type max u v) [AddCommGroup M] [Module R M], Prop)
 
 def LocalizedModulePreserves : Prop :=
-  ∀ {R : Type u} (S : Type u) {M : Type v} [CommRing R] [CommRing S] [AddCommGroup M] [Module R M]
-  (p : Submonoid R),
-  P R (ULift.{u} M) → P (Localization p) (LocalizedModule p M)
+  ∀ {R : Type u} {M : Type v} [CommRing R] [AddCommGroup M] [Module R M] (p : Submonoid R),
+    P R (ULift.{u} M) → P (Localization p) (LocalizedModule p M)
 
 /-- A property `P` of comm rings satisfies `OfLocalizedModuleMaximal`
   if `P` holds for `M` whenever `P` holds for `Mₘ` for all maximal ideal `m`. -/
 def OfLocalizedModuleMaximal : Prop :=
   ∀ {R : Type u} [CommRing R] (M : Type v) [AddCommGroup M] [Module R M],
-  (∀ (J : Ideal R) (_ : J.IsMaximal), P (Localization.AtPrime J) (LocalizedModule.AtPrime J M)) →
-  P R (ULift.{u} M)
+    (∀ (J : Ideal R) (_ : J.IsMaximal), P (Localization.AtPrime J) (LocalizedModule.AtPrime J M)) →
+    P R (ULift.{u} M)
 
 /-- A property `P` of a `R`-module `M` satisfies `OfLocalizedModuleFiniteSpan`
   if `P` holds for `M` whenever there exists a finite set `{ r }` that spans `R` such that
@@ -74,8 +74,8 @@ def OfLocalizedModuleMaximal : Prop :=
   `ofLocalizedModuleSpan_iff_finite`, but this is easier to prove. -/
 def OfLocalizedModuleFiniteSpan :=
   ∀ {R : Type u} [CommRing R] (M : Type v) [AddCommGroup M] [Module R M] (s : Finset R)
-  (_ : Ideal.span (s : Set R) = ⊤)
-  (_ : ∀ r : s, P (Localization.Away r.1) (LocalizedModule.Away r.1 M)), P R (ULift.{u} M)
+    (_ : Ideal.span (s : Set R) = ⊤)
+    (_ : ∀ r : s, P (Localization.Away r.1) (LocalizedModule.Away r.1 M)), P R (ULift.{u} M)
 
 /-- A property `P` of a `R`-module `M` satisfies `OfLocalizedModuleSpan`
   if `P` holds for `M` whenever there exists a set `{ r }` that spans `R` such that
@@ -85,8 +85,8 @@ def OfLocalizedModuleFiniteSpan :=
   `ofLocalizedModuleSpan_iff_finite`, but this is easier to prove. -/
 def OfLocalizedModuleSpan :=
   ∀ {R : Type u} [CommRing R] (M : Type v) [AddCommGroup M] [Module R M] (s : Set R)
-  (_ : Ideal.span s = ⊤)
-  (_ : ∀ r : s, P (Localization.Away r.1) (LocalizedModule.Away r.1 M)), P R (ULift.{u} M)
+    (_ : Ideal.span s = ⊤)
+    (_ : ∀ r : s, P (Localization.Away r.1) (LocalizedModule.Away r.1 M)), P R (ULift.{u} M)
 
 theorem ofLocalizedModuleSpan_iff_finite :
     OfLocalizedModuleSpan @P ↔ OfLocalizedModuleFiniteSpan @P := by
@@ -100,4 +100,52 @@ theorem ofLocalizedModuleSpan_iff_finite :
 
 end LocalizedModule
 
+section LinearMap
+
+variable (P : ∀ {R : Type u} [CommRing R] {M : Type v} [AddCommGroup M] [Module R M]
+  {N : Type v'} [AddCommGroup N] [Module R N] (_ : M →ₗ[R] N), Prop)
+
+/-- A property `P` of ring homs is said to be preserved by localization
+ if `P` holds for `M⁻¹R →+* M⁻¹S` whenever `P` holds for `R →+* S`. -/
+def LinearMap.LocalizedModulePreserves :=
+  ∀ ⦃R : Type u⦄ [CommRing R] {M : Type v} [AddCommGroup M] [Module R M]
+    {N : Type v'} [AddCommGroup N] [Module R N] (f : M →ₗ[R] N)
+    (p : Submonoid R) (S : Type u) [CommRing S] [Algebra R S] [IsLocalization p S]
+    {M' : Type v} [AddCommGroup M'] [Module R M'] [Module S M'] [IsScalarTower R S M']
+    (fm : M →ₗ[R] M') {N' : Type v'} [AddCommGroup N'] [Module R N'] [Module S N']
+    [IsScalarTower R S N'] (fn : N →ₗ[R] N') [IsLocalizedModule p fm] [IsLocalizedModule p fn],
+    P f → P ((IsLocalizedModule.map p fm fn f).extendScalarsOfIsLocalization p S)
+/-
+/-- A property `P` of ring homs satisfies `RingHom.OfLocalizationFiniteSpan`
+if `P` holds for `R →+* S` whenever there exists a finite set `{ r }` that spans `R` such that
+`P` holds for `Rᵣ →+* Sᵣ`.
+
+Note that this is equivalent to `RingHom.OfLocalizationSpan` via
+`RingHom.ofLocalizationSpan_iff_finite`, but this is easier to prove. -/
+def LinearMap.OfLocalizedModuleFiniteSpan :=
+  ∀ ⦃R S : Type u⦄ [CommRing R] [CommRing S] (f : R →+* S) (s : Finset R)
+    (_ : Ideal.span (s : Set R) = ⊤) (_ : ∀ r : s, P (Localization.awayMap f r)), P f
+
+/-- A property `P` of ring homs satisfies `RingHom.OfLocalizationFiniteSpan`
+if `P` holds for `R →+* S` whenever there exists a set `{ r }` that spans `R` such that
+`P` holds for `Rᵣ →+* Sᵣ`.
+
+Note that this is equivalent to `RingHom.OfLocalizationFiniteSpan` via
+`RingHom.ofLocalizationSpan_iff_finite`, but this has less restrictions when applying. -/
+def LinearMap.OfLocalizedModuleSpan :=
+  ∀ ⦃R S : Type u⦄ [CommRing R] [CommRing S] (f : R →+* S) (s : Set R) (_ : Ideal.span s = ⊤)
+    (_ : ∀ r : s, P (Localization.awayMap f r)), P f
+ -/
+end LinearMap
+
 end Properties
+
+section cat
+
+variable (P : ∀ (R : Type u) [CommRing R] (_ : ModuleCat R), Prop)
+
+def LocalizedModuleCatPreserves : Prop :=
+  ∀ {R : Type u} [CommRing R] (M : ModuleCat R) (p : Submonoid R),
+    P R M → P (Localization p) ⟨LocalizedModule p M⟩
+
+end cat

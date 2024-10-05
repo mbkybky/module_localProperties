@@ -3,7 +3,6 @@ Copyright (c) 2024 Yi Song. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yi Song, Yongle Hu
 -/
-import Mathlib.Algebra.Module.Submodule.Localization
 import ModuleLocalProperties.Basic
 
 open Submodule IsLocalizedModule LocalizedModule Ideal
