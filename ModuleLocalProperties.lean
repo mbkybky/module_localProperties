@@ -1,5 +1,6 @@
 import ModuleLocalProperties.Basic
 import ModuleLocalProperties.Defs
+import ModuleLocalProperties.Finite_presented
 import ModuleLocalProperties.MissingLemmas.Range
 import ModuleLocalProperties.MissingLemmas.Submodule
 import ModuleLocalProperties.SpanIsom

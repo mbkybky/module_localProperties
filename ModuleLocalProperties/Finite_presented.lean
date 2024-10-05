@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2024 Yi Song. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Yi Song, Yongle Hu, Sihan Su
+-/
 import Mathlib.Algebra.Module.FinitePresentation
 import Mathlib.RingTheory.Localization.Finiteness
 import Mathlib.RingTheory.Localization.Away.AdjoinRoot
@@ -56,3 +61,9 @@ lemma finitepresented_of_localization_fintespan {R M : Type*} [CommRing R] [AddC
   obtain ⟨m, s, eq⟩ := this
   exact ⟨by simp, fun _ ↦ (mem_localized' (Localization _) _ (mkLinearMap _ M) ⊤ x).mpr
     ⟨m, trivial, s, by rw [← eq, (mk_eq_mk' s m)]⟩⟩
+
+lemma isnoetherian_of_localization_finitespan {R M : Type*} [CommRing R] [AddCommGroup M]
+  [Module R M] (s : Finset R) (spn : span (s : Set R) = ⊤) (h : ∀ r : s,
+    IsNoetherian (Localization.Away r.1) (LocalizedModule.Away r.1 M)) : IsNoetherian R M :=
+  isNoetherian_def.mpr <| fun N => submodule.of_localizationSpan_finite _ _ spn <|
+  fun r => isNoetherian_def.mp (h r) <| (localized (Submonoid.powers ↑r) N)
