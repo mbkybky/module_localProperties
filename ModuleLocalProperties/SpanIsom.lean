@@ -4,9 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yi Song, Yongle Hu
 -/
 import Mathlib.Algebra.Module.Submodule.Localization
-import Mathlib.RingTheory.Localization.AtPrime
 import ModuleLocalProperties.Basic
-
 
 open Submodule IsLocalizedModule LocalizedModule Ideal
 
@@ -27,16 +25,10 @@ lemma surjective_of_localization_finitespan (h : ∀ r : s, Function.Surjective
     ((map (Submonoid.powers r.1) f).extendScalarsOfIsLocalization (Submonoid.powers r.1)
     (Localization (Submonoid.powers r.1)))) :
     Function.Surjective f := by
-  simp only [← LinearMap.range_eq_top, Subtype.forall] at h ⊢
-  apply submodule_eq_top_of_localization_finitespan
-  exact spn
-  simp only [Subtype.forall]
-  intro a ains
-  specialize h a ains
-  unfold LocalizedModule.map at h
-  rw [← LinearMap.localized'_range_eq_range_localizedMap] at h
-  unfold localized
-  rw [h]
+  simp only [← LinearMap.range_eq_top] at h ⊢
+  apply submodule_eq_top_of_localization_finitespan _ _ spn
+  intro a
+  exact Eq.trans (LinearMap.localized'_range_eq_range_localizedMap _ _ _ f) (h a)
 
 lemma bijective_of_localization_finitespan (h : ∀ r : s, Function.Bijective
     ((map (Submonoid.powers r.1) f).extendScalarsOfIsLocalization (Submonoid.powers r.1)

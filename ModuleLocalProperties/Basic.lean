@@ -111,15 +111,13 @@ lemma submodule_eq_of_localization_finitespan {R M : Type*} [CommRing R] [AddCom
   (submodule_le_of_localization_finitespan _ _ s spn (fun r ↦ le_of_eq (h r).symm))
 
 lemma submodule_eq_bot_of_localization_finitespan {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] (N : Submodule R M) (s : Finset R) (spn : span (s : Set R) = ⊤) (h : ∀ r : s, localized (Submonoid.powers r.1) N = ⊥) : N = ⊥ := by
-  apply submodule_eq_of_localization_finitespan
-  exact spn
+  apply submodule_eq_of_localization_finitespan _ _ _ spn
   simp only [h, Subtype.forall]
   intros
   rw[localized_bot]
 
 lemma submodule_eq_top_of_localization_finitespan {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] (N : Submodule R M) (s : Finset R) (spn : span (s : Set R) = ⊤) (h : ∀ r : s, localized (Submonoid.powers r.1) N = ⊤) : N = ⊤ := by
-  apply submodule_eq_of_localization_finitespan
-  exact spn
+  apply submodule_eq_of_localization_finitespan _ _ _ spn
   simp only [h, Subtype.forall]
   intros
   rw[localized_top]
