@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2024 Yongle Hu. All rights reserved.
+Copyright (c) 2024 Yi Song. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Yongle Hu, Sihan Su
+Authors: Yi Song
 -/
 import Mathlib.Algebra.Module.Submodule.Localization
 import Mathlib.RingTheory.Localization.AtPrime

@@ -3,17 +3,11 @@ Copyright (c) 2024 Yongle Hu. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yongle Hu, Sihan Su
 -/
-import Mathlib.Algebra.Module.Submodule.Localization
-import Mathlib.RingTheory.Localization.AtPrime
+import ModuleLocalProperties.Defs
+import ModuleLocalProperties.MissingLemmas.Range
 import ModuleLocalProperties.MissingLemmas.Submodule
 
 open Submodule IsLocalizedModule LocalizedModule Ideal
-
-abbrev IsLocalizedModule.AtPrime {R M M': Type*} [CommSemiring R] (J : Ideal R) [J.IsPrime] [AddCommMonoid M] [AddCommMonoid M'] [Module R M] [Module R M'] (f : M →ₗ[R] M'):=
-  IsLocalizedModule J.primeCompl f
-
-abbrev LocalizedModule.AtPrime {R : Type*} [CommSemiring R] (J : Ideal R) [J.IsPrime] (M : Type*) [AddCommMonoid M] [Module R M]:=
-  LocalizedModule J.primeCompl M
 
 lemma eq_zero_of_localization_module {R M : Type*} [CommSemiring R] [AddCommMonoid M] [Module R M]
 {x : M} (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), (mkLinearMap J.primeCompl M) x  = 0) :
@@ -26,7 +20,7 @@ lemma eq_zero_of_localization_module {R M : Type*} [CommSemiring R] [AddCommMono
   exact s.2 (lem ((mem_annihilator_span_singleton x s.1).mpr hs))
 
 lemma module_eq_zero_of_localization {R M : Type*} [CommSemiring R] [AddCommMonoid M] [Module R M]
-(h : ∀ (J : Ideal R) (_ : J.IsMaximal), Subsingleton (AtPrime J M)) :
+(h : ∀ (J : Ideal R) (_ : J.IsMaximal), Subsingleton (LocalizedModule.AtPrime J M)) :
 Subsingleton M :=  subsingleton_of_forall_eq 0 fun x ↦ eq_zero_of_localization_module
   fun J maxJ ↦ (@Subsingleton.eq_zero _ _ (h J maxJ) (mk x 1))
 
@@ -57,35 +51,6 @@ localized J.primeCompl N = localized J.primeCompl P) : N = P :=
   eq_of_le_of_le (submodule_le_of_localization _ _ (fun J hJ ↦ le_of_eq (h J hJ)))
   (submodule_le_of_localization _ _ (fun J hJ ↦ le_of_eq (h J hJ).symm))
 
-section range
-variable {R S : Type*} [CommRing R] [CommRing S] [Algebra R S]
-  (p : Submonoid R) [IsLocalization p S]
-variable {M N : Type*} [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] [Module S N]
-  [IsScalarTower R S N] (f : M →ₗ[R] N) [IsLocalizedModule p f]
-variable {P Q : Type*} [AddCommGroup P] [Module R P] [AddCommGroup Q] [Module R Q] [Module S Q]
-  [IsScalarTower R S Q] (f' : P →ₗ[R] Q) [IsLocalizedModule p f']
-
-lemma LinearMap.localized'_range_eq_range_localizedMap (g : M →ₗ[R] P) :
-    localized' S p f' (LinearMap.range g) =
-      LinearMap.range ((map p f f' g).extendScalarsOfIsLocalization p S) := by
-  ext x
-  simp only [mem_localized', extendScalarsOfIsLocalization_apply']
-  constructor
-  · rintro ⟨r, hr, a, ha⟩
-    obtain ⟨m, hm⟩ := mem_range.mp hr
-    exact ⟨(mk' f m a), by rw [extendScalarsOfIsLocalization_apply', map_mk', hm, ha]⟩
-  · intro h
-    obtain ⟨n, hn⟩ := mem_range.mp h
-    obtain ⟨m, hm⟩ := surj p f n
-    exact ⟨(g m.1), mem_range_self g m.1, m.2, by
-      rw [← hn, extendScalarsOfIsLocalization_apply', ← mk'_eq_iff.mpr hm.symm, map_mk']⟩
-end range
-
-noncomputable def LocalizedModule.map {R M M' : Type*} [CommRing R] [AddCommGroup M] [Module R M]
-[AddCommGroup M'] [Module R M'] (S : Submonoid R) :
-  (M →ₗ[R] M') →ₗ[R] (LocalizedModule S M) →ₗ[R] (LocalizedModule S M') :=
-    IsLocalizedModule.map S (mkLinearMap S M) (mkLinearMap S M')
-
 lemma exact_of_localization {R M₀ M₁ M₂ : Type*} [CommRing R] [AddCommGroup M₀] [Module R M₀]
 [AddCommGroup M₁] [Module R M₁] [AddCommGroup M₂] [Module R M₂] (f : M₀ →ₗ[R] M₁) (g : M₁ →ₗ[R] M₂)
 (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Function.Exact
@@ -100,10 +65,6 @@ lemma exact_of_localization {R M₀ M₁ M₂ : Type*} [CommRing R] [AddCommGrou
   rw [LinearMap.localized'_range_eq_range_localizedMap _ (mkLinearMap J.primeCompl M₀),
     LinearMap.localized'_ker_eq_ker_localizedMap _ _ _ (mkLinearMap J.primeCompl M₂)]
   exact h J hJ
-
-abbrev IsLocalizedModule.away {R M M': Type*} [CommSemiring R] (x : R) [AddCommMonoid M] [Module R M] [AddCommMonoid M'] [Module R M'] (f : M →ₗ[R] M') := IsLocalizedModule (Submonoid.powers x) f
-
-abbrev LocalizedModule.away {R : Type*} [CommSemiring R] (x : R) (M : Type*) [AddCommMonoid M] [Module R M]:= LocalizedModule (Submonoid.powers x) M
 
 lemma eq_zero_of_localization_finitespan {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] (x : M) (s : Finset R) (spn : span (s : Set R) = ⊤) (h : ∀ r : s, (mkLinearMap (Submonoid.powers r.1) M ) x = 0) : x = 0 := by
   rw [← span_singleton_eq_bot (R := R), ← annihilator_eq_top_iff]
