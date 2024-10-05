@@ -38,7 +38,6 @@ lemma finitepresented_of_localization_fintespan {R M : Type*} [CommRing R] [AddC
   letI : Module R (LinearMap.ker f) := by exact (LinearMap.ker f).module'
   apply submodule.of_localizationSpan_finite (LinearMap.ker f) s spn
   intro g
-  have := h g
   set f' := (map (Submonoid.powers g.1) f).extendScalarsOfIsLocalization
     (Submonoid.powers g.1) (Localization.Away g.1)
   have : (localized (Submonoid.powers g.1) (LinearMap.ker f)) =
