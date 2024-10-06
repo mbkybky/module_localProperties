@@ -5,13 +5,11 @@ Authors: SiHan Su
 -/
 import Mathlib.RingTheory.Flat.Basic
 
-import ModuleLocalProperties.Basic
+import ModuleLocalProperties.MissingLemmas.LocalizedModule
 
 open Submodule IsLocalizedModule LocalizedModule Ideal IsLocalization
 
 #check Module.Flat.iff_rTensor_injective'
-
-noncomputable abbrev LocalizedModule.map' {R M N : Type*} [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R) (f : M →ₗ[R] N) := (map S f).extendScalarsOfIsLocalization S (Localization S)
 
 lemma inj_of_local {R M N : Type*} [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (f : M →ₗ[R] N) (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Function.Injective (map' J.primeCompl f)) : Function.Injective f := by
   refine LinearMap.ker_eq_bot.mp ?_
