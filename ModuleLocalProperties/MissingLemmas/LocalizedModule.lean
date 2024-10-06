@@ -7,9 +7,37 @@ import Mathlib.Algebra.Module.Submodule.Localization
 
 open Submodule IsLocalizedModule LocalizedModule Ideal IsLocalization TensorProduct
 
-example {R : Type*} [CommRing R] (S : Submonoid R) {M N : Type*} [AddCommGroup M] [Module R M]
+variable {R : Type*} [CommRing R] (S : Submonoid R) {M N : Type*} [AddCommGroup M] [Module R M]
   [AddCommGroup N] [Module R N] [Module (Localization S) N] [IsScalarTower R (Localization S) N]
-  (f : M →ₗ[R] N) : LocalizedModule S M →ₗ[Localization S] N := sorry
+
+
+def inv (s : S) : Module.End R N where
+  toFun := fun n => (Localization.mk 1 s) • n
+  map_add' := smul_add _
+  map_smul' := smul_comm _
+
+lemma invertible (s : S) : IsUnit ((algebraMap R (Module.End R N)) s) := by
+  rw [isUnit_iff_exists]
+  use (inv _ s)
+  constructor
+  · ext n
+    rw [LinearMap.mul_apply, Module.algebraMap_end_apply, LinearMap.one_apply, inv]
+    dsimp
+    rw [← smul_assoc, Localization.smul_mk, smul_eq_mul, mul_one, Localization.mk_eq_monoidOf_mk',
+      Submonoid.LocalizationMap.mk'_self', one_smul]
+  · ext n
+    rw [LinearMap.mul_apply, Module.algebraMap_end_apply, LinearMap.one_apply, inv]
+    dsimp
+    rw [smul_comm, ← smul_assoc, Localization.smul_mk, smul_eq_mul, mul_one,
+      Localization.mk_eq_monoidOf_mk', Submonoid.LocalizationMap.mk'_self', one_smul]
+
+noncomputable def LiftOnLocalization' (f : M →ₗ[R] N) : LocalizedModule S M →ₗ[R] N where
+    toFun := LocalizedModule.lift S f <| invertible _
+    map_add' := map_add _
+    map_smul' := map_smul _
+
+noncomputable def LiftOnLocalization (f : M →ₗ[R] N) : LocalizedModule S M →ₗ[Localization S] N
+  := LinearMap.extendScalarsOfIsLocalization S _ (LiftOnLocalization' _ f)
 
 
 
