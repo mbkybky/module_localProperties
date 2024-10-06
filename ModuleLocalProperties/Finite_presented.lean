@@ -63,7 +63,13 @@ lemma finitepresented_of_localization_fintespan {R M : Type*} [CommRing R] [AddC
     ⟨m, trivial, s, by rw [← eq, (mk_eq_mk' s m)]⟩⟩
 
 lemma isnoetherian_of_localization_finitespan {R M : Type*} [CommRing R] [AddCommGroup M]
-  [Module R M] (s : Finset R) (spn : span (s : Set R) = ⊤) (h : ∀ r : s,
+    [Module R M] (s : Finset R) (spn : span (s : Set R) = ⊤) (h : ∀ r : s,
     IsNoetherian (Localization.Away r.1) (LocalizedModule.Away r.1 M)) : IsNoetherian R M :=
-  isNoetherian_def.mpr <| fun N => submodule.of_localizationSpan_finite _ _ spn <|
-  fun r => isNoetherian_def.mp (h r) <| (localized (Submonoid.powers ↑r) N)
+  isNoetherian_def.mpr <| fun _ => submodule.of_localizationSpan_finite _ _ spn <|
+  fun r => isNoetherian_def.mp (h r) <| _
+
+lemma isnoetherianRing_of_localization_finitespan {R : Type*} [CommRing R](s : Finset R)
+    (spn : span (s : Set R) = ⊤) (h : ∀ r : s, IsNoetherianRing (Localization.Away r.1)) :
+    IsNoetherianRing R :=
+  (isNoetherianRing_iff_ideal_fg _).mpr <| fun _ => Ideal.fg_of_localizationSpan _ spn <|
+  fun r => (isNoetherianRing_iff_ideal_fg _).mp (h r) <| _
