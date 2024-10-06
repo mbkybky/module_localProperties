@@ -5,8 +5,8 @@ Authors: Yi Song, Yongle Hu, Sihan Su
 -/
 import Mathlib.Algebra.Module.FinitePresentation
 import Mathlib.RingTheory.Localization.Finiteness
-import Mathlib.RingTheory.Localization.Away.AdjoinRoot
-import Mathlib.Algebra.Module.LocalizedModule
+import ModuleLocalProperties.Defs
+import ModuleLocalProperties.MissingLemmas.Range
 
 import ModuleLocalProperties.Basic
 
@@ -44,7 +44,7 @@ lemma finitepresented_of_localization_fintespan {R M : Type*} [CommRing R] [AddC
   letI : Module R (LinearMap.ker f) := by exact (LinearMap.ker f).module'
   apply submodule.of_localizationSpan_finite (LinearMap.ker f) s spn
   intro g
-  set f' := (map (Submonoid.powers g.1) _ _ f).extendScalarsOfIsLocalization
+  set f' := (map (Submonoid.powers g.1) f).extendScalarsOfIsLocalization
     (Submonoid.powers g.1) (Localization.Away g.1)
   have : (localized (Submonoid.powers g.1) (LinearMap.ker f)) =
     LinearMap.ker f' := LinearMap.localized'_ker_eq_ker_localizedMap _ _ _ _ _

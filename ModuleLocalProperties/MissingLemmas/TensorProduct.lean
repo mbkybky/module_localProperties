@@ -1,6 +1,11 @@
+/-
+Copyright (c) 2024 Song Yi. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Song Yi
+-/
+import Mathlib.Algebra.Module.LocalizedModule
 import Mathlib.RingTheory.Flat.Basic
-
-import ModuleLocalProperties.Finite_presented
+import Mathlib.RingTheory.IsTensorProduct
 
 open Submodule IsLocalizedModule LocalizedModule Ideal IsLocalization TensorProduct
 
@@ -61,10 +66,3 @@ noncomputable def Map {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [M
 
 noncomputable def Eqv {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R) :
 (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) ≃ₗ[Localization S] LocalizedModule S (M ⊗[R] N) := sorry
-
-open LinearMap Submodule TensorProduct DirectSum
-
-theorem Module.Flat.iff_isTensorProduct_lift_injective (R M : Type*) [CommRing R] [AddCommGroup M]
-    [Module R M] :  Module.Flat R M ↔ ∀ (I : Ideal R) {N : Type*} [AddCommGroup N] [Module R N]
-    (f : I →ₗ[R] M →ₗ[R] N) (h : IsTensorProduct f),
-    Function.Injective (IsTensorProduct.lift h ((lsmul R M).comp I.subtype)) := sorry

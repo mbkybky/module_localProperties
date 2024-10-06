@@ -3,8 +3,9 @@ Copyright (c) 2024 Yongle Hu. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yongle Hu
 -/
-import Mathlib.Algebra.Module.Submodule.Localization
-import ModuleLocalProperties.Finite_presented
+import Mathlib.Algebra.Module.LocalizedModule
+import Mathlib.RingTheory.Ideal.Maps
+import Mathlib.RingTheory.IsTensorProduct
 
 open TensorProduct
 

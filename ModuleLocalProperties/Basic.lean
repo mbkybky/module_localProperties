@@ -54,8 +54,8 @@ localized J.primeCompl N = localized J.primeCompl P) : N = P :=
 lemma exact_of_localization {R M₀ M₁ M₂ : Type*} [CommRing R] [AddCommGroup M₀] [Module R M₀]
 [AddCommGroup M₁] [Module R M₁] [AddCommGroup M₂] [Module R M₂] (f : M₀ →ₗ[R] M₁) (g : M₁ →ₗ[R] M₂)
 (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Function.Exact
-  ((map J.primeCompl _ _ f).extendScalarsOfIsLocalization J.primeCompl (Localization J.primeCompl))
-  ((map J.primeCompl _ _ g).extendScalarsOfIsLocalization J.primeCompl (Localization J.primeCompl))) :
+  ((map J.primeCompl f).extendScalarsOfIsLocalization J.primeCompl (Localization J.primeCompl))
+  ((map J.primeCompl g).extendScalarsOfIsLocalization J.primeCompl (Localization J.primeCompl))) :
     Function.Exact f g := by
   rw [LinearMap.exact_iff]
   simp only [LinearMap.exact_iff] at h
@@ -123,8 +123,8 @@ lemma submodule_eq_top_of_localization_finitespan {R M : Type*} [CommRing R] [Ad
   rw [localized_top]
 
 lemma exact_of_localization_finitespan {R M₀ M₁ M₂ : Type*} [CommRing R] [AddCommGroup M₀] [Module R M₀] [AddCommGroup M₁] [Module R M₁] [AddCommGroup M₂] [Module R M₂] (s : Finset R) (spn : span (s : Set R) = ⊤) (f : M₀ →ₗ[R] M₁) (g : M₁ →ₗ[R] M₂) (h : ∀ r : s, Function.Exact
-  ((map (Submonoid.powers r.1) _ _ f).extendScalarsOfIsLocalization (Submonoid.powers r.1) (Localization (Submonoid.powers r.1)))
-  ((map (Submonoid.powers r.1) _ _ g).extendScalarsOfIsLocalization (Submonoid.powers r.1) (Localization (Submonoid.powers r.1)))) :
+  ((map (Submonoid.powers r.1) f).extendScalarsOfIsLocalization (Submonoid.powers r.1) (Localization (Submonoid.powers r.1)))
+  ((map (Submonoid.powers r.1) g).extendScalarsOfIsLocalization (Submonoid.powers r.1) (Localization (Submonoid.powers r.1)))) :
     Function.Exact f g := by
   rw [LinearMap.exact_iff]
   simp only [LinearMap.exact_iff] at h

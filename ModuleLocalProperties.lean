@@ -1,6 +1,11 @@
 import ModuleLocalProperties.Basic
 import ModuleLocalProperties.Defs
-import ModuleLocalProperties.Finite_presented
+import ModuleLocalProperties.FinitePresentation
+import ModuleLocalProperties.Flat
+import ModuleLocalProperties.MissingLemmas.FlatIff
+import ModuleLocalProperties.MissingLemmas.LocalizaedIsTensorProduct
+import ModuleLocalProperties.MissingLemmas.LocalizedModule
 import ModuleLocalProperties.MissingLemmas.Range
 import ModuleLocalProperties.MissingLemmas.Submodule
+import ModuleLocalProperties.MissingLemmas.TensorProduct
 import ModuleLocalProperties.SpanIsom

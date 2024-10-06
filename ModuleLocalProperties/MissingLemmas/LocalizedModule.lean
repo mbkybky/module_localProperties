@@ -5,8 +5,6 @@ Authors: Yi Song
 -/
 import Mathlib.Algebra.Module.Submodule.Localization
 
-import ModuleLocalProperties.Defs
-
 open Submodule IsLocalizedModule LocalizedModule Ideal IsLocalization TensorProduct
 
 example {R : Type*} [CommRing R] (S : Submonoid R) {M N : Type*} [AddCommGroup M] [Module R M]
@@ -15,7 +13,7 @@ example {R : Type*} [CommRing R] (S : Submonoid R) {M N : Type*} [AddCommGroup M
 
 
 
-
+/-
 example {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N]
     [Module R N] (S : Submonoid R) : IsLocalizedModule S (LocalizedModule.map S M N) := sorry
 
@@ -41,7 +39,7 @@ lemma Equiv1 {R : Type u} [CommSemiring R] (S : Submonoid R) (a : R × S) (b : R
     nth_rw 1 [h2,mul_assoc, ← mul_assoc y, mul_comm, mul_assoc, mul_comm x, ← h1]
     ring
 
-lemma Equiv2 {R : Type u} [CommSemiring R] (S : Submonoid R) (a : R × S) (b : R × S) : (LocalizedModule.r.setoid S R).r a b ↔ (OreLocalization.oreEqv S R).r a b := Equiv1 _ _ _
+lemma Equiv2 {R : Type u} [CommSemiring R] (S : Submonoid R) (a : R × S) (b : R × S) : (LocalizedModule.r.setoid S R).r a b ↔ (OreLocalization.oreEqv S R).r a b := Equiv1 _
 
 def Equiv4 {R : Type u} [CommSemiring R] (S : Submonoid R) : LocalizedModule S R ≃+* Localization S where
   toFun := sorry
@@ -56,9 +54,9 @@ def Equiv3 {R : Type u} [CommSemiring R] (S : Submonoid R) : Localization S  ≃
   let eq := fun (a : (R × S)) b => (Equiv2 S a b).symm
   let r := (LocalizedModule.r.setoid S R)
   let s := (OreLocalization.oreEqv S R)
-  let a := @Quotient.congr_mk _ _ s r e eq
+  let a := @Quotient.congr_mk s r e eq
   exact {
-  @Quotient.congr _ _ s r (Equiv.refl _) eq
+  @Quotient.congr s r (Equiv.refl _) eq
   with
   map_mul' := by
     rintro ⟨x⟩ ⟨y⟩
@@ -71,3 +69,4 @@ def Equiv3 {R : Type u} [CommSemiring R] (S : Submonoid R) : Localization S  ≃
 }
 variable  {R : Type u} [CommSemiring R] (S : Submonoid R)
 #synth CommSemiring (LocalizedModule S R)
+ -/
