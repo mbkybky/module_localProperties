@@ -43,6 +43,8 @@ section IsLocalizedModule
 
 variable (P : ∀ (R : Type u) [CommRing R] (M : Type v) [AddCommGroup M] [Module R M], Prop)
 
+/-- A property `P` of `R`-modules is said to be preserved by localization
+  if `P` holds for `p⁻¹M` whenever `P` holds for `M`. -/
 def IsLocalizedModulePreserves : Prop :=
   ∀ {R : Type u} (S : Type u) {M N : Type v} [CommRing R] [CommRing S] [AddCommGroup M]
   [AddCommGroup N] [Module R M] [Module R N] [Algebra R S] [Module S N] [IsScalarTower R S N]
@@ -55,18 +57,20 @@ section LocalizedModule
 
 variable (P : ∀ (R : Type u) [CommRing R] (M : Type max u v) [AddCommGroup M] [Module R M], Prop)
 
+/-- A property `P` of `R`-modules is said to be preserved by localization
+  if `P` holds for `p⁻¹M` whenever `P` holds for `M`. -/
 def LocalizedModulePreserves : Prop :=
   ∀ {R : Type u} {M : Type v} [CommRing R] [AddCommGroup M] [Module R M] (p : Submonoid R),
     P R (ULift.{u} M) → P (Localization p) (LocalizedModule p M)
 
-/-- A property `P` of comm rings satisfies `OfLocalizedModuleMaximal`
+/-- A property `P` of `R`-modules satisfies `OfLocalizedModuleMaximal`
   if `P` holds for `M` whenever `P` holds for `Mₘ` for all maximal ideal `m`. -/
 def OfLocalizedModuleMaximal : Prop :=
   ∀ {R : Type u} [CommRing R] (M : Type v) [AddCommGroup M] [Module R M],
     (∀ (J : Ideal R) (_ : J.IsMaximal), P (Localization.AtPrime J) (LocalizedModule.AtPrime J M)) →
     P R (ULift.{u} M)
 
-/-- A property `P` of a `R`-module `M` satisfies `OfLocalizedModuleFiniteSpan`
+/-- A property `P` of `R`-modules satisfies `OfLocalizedModuleFiniteSpan`
   if `P` holds for `M` whenever there exists a finite set `{ r }` that spans `R` such that
   `P` holds for `Mᵣ`.
 
@@ -77,7 +81,7 @@ def OfLocalizedModuleFiniteSpan :=
     (_ : Ideal.span (s : Set R) = ⊤)
     (_ : ∀ r : s, P (Localization.Away r.1) (LocalizedModule.Away r.1 M)), P R (ULift.{u} M)
 
-/-- A property `P` of a `R`-module `M` satisfies `OfLocalizedModuleSpan`
+/-- A property `P` of `R`-modules satisfies `OfLocalizedModuleSpan`
   if `P` holds for `M` whenever there exists a set `{ r }` that spans `R` such that
   `P` holds for `Mᵣ`.
 
@@ -147,5 +151,12 @@ variable (P : ∀ (R : Type u) [CommRing R] (_ : ModuleCat R), Prop)
 def LocalizedModuleCatPreserves : Prop :=
   ∀ {R : Type u} [CommRing R] (M : ModuleCat R) (p : Submonoid R),
     P R M → P (Localization p) ⟨LocalizedModule p M⟩
+
+lemma test : LocalizedModuleCatPreserves (fun R _ M => NoZeroSMulDivisors R M) := sorry
+
+example {R : Type u} [CommRing R] (M : Type max u v) [AddCommGroup M] [Module R M] (p : Submonoid R)
+    (h : NoZeroSMulDivisors R M) :
+    NoZeroSMulDivisors (Localization p) (LocalizedModule p M) := by
+  exact test ⟨M⟩ p h
 
 end cat
