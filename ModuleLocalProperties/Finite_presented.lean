@@ -15,7 +15,7 @@ open Submodule IsLocalizedModule LocalizedModule Ideal IsLocalization
 noncomputable def LinearEquiv.extendScalarsOfIsLocalization {R M N : Type*} [CommSemiring R]
     (S : Submonoid R) (A : Type*) [CommSemiring A] [Algebra R A] [IsLocalization S A]
     [AddCommMonoid M] [Module R M] [Module A M] [IsScalarTower R A M] [AddCommMonoid N]
-    [Module R N] [Module A N] [IsScalarTower R A N]  (f : M ≃ₗ[R] N) : M ≃ₗ[A] N :=
+    [Module R N] [Module A N] [IsScalarTower R A N] (f : M ≃ₗ[R] N) : M ≃ₗ[A] N :=
   LinearEquiv.ofBijective (f.toLinearMap.extendScalarsOfIsLocalization S A)
   (Function.bijective_iff_has_inverse.mpr ⟨f.symm, Function.leftInverse_iff_comp.mpr
   ((symm_comp_eq id f).mpr rfl), Function.rightInverse_iff_comp.mpr ((comp_symm_eq id f).mpr rfl)⟩)
@@ -44,7 +44,7 @@ lemma finitepresented_of_localization_fintespan {R M : Type*} [CommRing R] [AddC
   letI : Module R (LinearMap.ker f) := by exact (LinearMap.ker f).module'
   apply submodule.of_localizationSpan_finite (LinearMap.ker f) s spn
   intro g
-  set f' := (map (Submonoid.powers g.1) f).extendScalarsOfIsLocalization
+  set f' := (map (Submonoid.powers g.1) _ _ f).extendScalarsOfIsLocalization
     (Submonoid.powers g.1) (Localization.Away g.1)
   have : (localized (Submonoid.powers g.1) (LinearMap.ker f)) =
     LinearMap.ker f' := LinearMap.localized'_ker_eq_ker_localizedMap _ _ _ _ _

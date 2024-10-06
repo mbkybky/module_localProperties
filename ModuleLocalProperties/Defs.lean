@@ -32,10 +32,10 @@ protected abbrev LocalizedModule.Away {R : Type*} [CommSemiring R] (x : R)
     (M : Type*) [AddCommMonoid M] [Module R M] :=
   LocalizedModule (Submonoid.powers x) M
 
-noncomputable def LocalizedModule.map {R M M' : Type*} [CommRing R] [AddCommGroup M] [Module R M]
-[AddCommGroup M'] [Module R M'] (S : Submonoid R) :
-  (M →ₗ[R] M') →ₗ[R] (LocalizedModule S M) →ₗ[R] (LocalizedModule S M') :=
-    IsLocalizedModule.map S (mkLinearMap S M) (mkLinearMap S M')
+noncomputable def LocalizedModule.map {R : Type*} [CommRing R] (S : Submonoid R) (M M' : Type*)
+    [AddCommGroup M] [Module R M] [AddCommGroup M'] [Module R M'] :
+    (M →ₗ[R] M') →ₗ[R] (LocalizedModule S M) →ₗ[R] (LocalizedModule S M') :=
+  IsLocalizedModule.map S (mkLinearMap S M) (mkLinearMap S M')
 
 section Properties
 

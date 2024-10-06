@@ -1,9 +1,11 @@
 import Mathlib.RingTheory.Flat.Basic
 
-import ModuleLocalProperties.Basic
 import ModuleLocalProperties.Finite_presented
 
 open Submodule IsLocalizedModule LocalizedModule Ideal IsLocalization TensorProduct
+
+example {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R) : IsLocalizedModule S (LocalizedModule.map S M N) := by
+  sorry
 
 noncomputable def Map1 {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R) :
 M →ₗ[R] N →ₗ[R] LocalizedModule S (M ⊗[R] N) where
@@ -32,9 +34,12 @@ M → LocalizedModule S N →ₗ[R] LocalizedModule S (M ⊗[R] N) :=by
   intro m
   use LocalizedModule.lift S (Map1 M N S m) (by
   intro x
-  rw[isUnit_iff_exists]
-
-  sorry)
+  apply isUnit_iff_exists.mpr ⟨{
+    toFun := sorry
+    map_add' := sorry
+    map_smul' := sorry
+  }, sorry, sorry⟩
+  )
   sorry
 
 
