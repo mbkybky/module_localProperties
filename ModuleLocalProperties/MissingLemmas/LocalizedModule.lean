@@ -5,7 +5,19 @@ Authors: Yi Song
 -/
 import Mathlib.Algebra.Module.Submodule.Localization
 
-open Submodule IsLocalizedModule LocalizedModule Ideal
+import ModuleLocalProperties.Defs
+
+open Submodule IsLocalizedModule LocalizedModule Ideal IsLocalization TensorProduct
+
+example {R : Type*} [CommRing R] (S : Submonoid R) {M N : Type*} [AddCommGroup M] [Module R M]
+  [AddCommGroup N] [Module R N] [Module (Localization S) N] [IsScalarTower R (Localization S) N]
+  (f : M →ₗ[R] N) : LocalizedModule S M →ₗ[Localization S] N := sorry
+
+
+
+
+example {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N]
+    [Module R N] (S : Submonoid R) : IsLocalizedModule S (LocalizedModule.map S M N) := sorry
 
 #check quotEquivOfEq
 

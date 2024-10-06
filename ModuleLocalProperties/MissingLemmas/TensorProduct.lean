@@ -4,9 +4,6 @@ import ModuleLocalProperties.Finite_presented
 
 open Submodule IsLocalizedModule LocalizedModule Ideal IsLocalization TensorProduct
 
-example {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R) : IsLocalizedModule S (LocalizedModule.map S M N) := by
-  sorry
-
 noncomputable def Map1 {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R) :
 M →ₗ[R] N →ₗ[R] LocalizedModule S (M ⊗[R] N) where
   toFun := fun m => {
@@ -64,3 +61,10 @@ noncomputable def Map {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [M
 
 noncomputable def Eqv {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R) :
 (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) ≃ₗ[Localization S] LocalizedModule S (M ⊗[R] N) := sorry
+
+open LinearMap Submodule TensorProduct DirectSum
+
+theorem Module.Flat.iff_isTensorProduct_lift_injective (R M : Type*) [CommRing R] [AddCommGroup M]
+    [Module R M] :  Module.Flat R M ↔ ∀ (I : Ideal R) {N : Type*} [AddCommGroup N] [Module R N]
+    (f : I →ₗ[R] M →ₗ[R] N) (h : IsTensorProduct f),
+    Function.Injective (IsTensorProduct.lift h ((lsmul R M).comp I.subtype)) := sorry
