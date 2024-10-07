@@ -143,20 +143,3 @@ def LinearMap.OfLocalizedModuleSpan :=
 end LinearMap
 
 end Properties
-
-section cat
-
-variable (P : ∀ (R : Type u) [CommRing R] (_ : ModuleCat R), Prop)
-
-def LocalizedModuleCatPreserves : Prop :=
-  ∀ {R : Type u} [CommRing R] (M : ModuleCat R) (p : Submonoid R),
-    P R M → P (Localization p) ⟨LocalizedModule p M⟩
-
-lemma test : LocalizedModuleCatPreserves (fun R _ M => NoZeroSMulDivisors R M) := sorry
-
-example {R : Type u} [CommRing R] (M : Type max u v) [AddCommGroup M] [Module R M] (p : Submonoid R)
-    (h : NoZeroSMulDivisors R M) :
-    NoZeroSMulDivisors (Localization p) (LocalizedModule p M) := by
-  exact test ⟨M⟩ p h
-
-end cat

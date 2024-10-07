@@ -103,7 +103,7 @@ lemma iff_lTensor_preserves_injective_linearMap'' [Small.{v'} R] [Small.{v'} M] 
       (L : N →ₗ[R] N'), Function.Injective L → Function.Injective (L.lTensor M) := by
   simp_rw [iff_rTensor_preserves_injective_linearMap'', LinearMap.lTensor_inj_iff_rTensor_inj]
 
--- The following lemmas have been proved in PR [#17484](https://github.com/leanprover-community/mathlib4/pull/17484)
+-- The following two lemmas have been proved in PR [#17484](https://github.com/leanprover-community/mathlib4/pull/17484)
 
 /-- M is flat if and only if `M ⊗ -` is a left exact functor. -/
 theorem iff_lTensor_exact''' [Small.{v'} R] [Small.{v'} M] : Flat R M ↔
