@@ -8,7 +8,7 @@ import Mathlib.RingTheory.Flat.Basic
 import Mathlib.RingTheory.IsTensorProduct
 import ModuleLocalProperties.MissingLemmas.LocalizedModule
 
-open  TensorProduct
+open  TensorProduct LocalizedModule
 
 #check TensorProduct.mk
 
@@ -30,12 +30,30 @@ noncomputable def Map : (LocalizedModule S M) ⊗[Localization S] (LocalizedModu
 
 #check LocalizedModule.lift'
 
-noncomputable def InvMap : LocalizedModule S (M ⊗[R] N) →--ₗ[Localization S]
-    (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) := by
-  intro lc_ts
-  haveI : Module R (LocalizedModule S (M ⊗[R] N)) := inferInstance
-  --haveI : IsLocalizedModule S (fun m => LocalizedModule.mk m 1) :=sorry
-  sorry
+noncomputable def InvBiMap : M →ₗ[R] N →ₗ[R]
+    (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) :=
+  LinearMap.mk₂ _ (fun m n => mkLinearMap _ _ m ⊗ₜ mkLinearMap _ _ n)
+  fun _ _ _ => by simp only [map_add, add_tmul]
+  fun _ _ _ => by simp only [map_smul, smul_tmul']
+  fun _ _ _ => by simp only [map_add, tmul_add]
+  fun _ _ _ => by simp only [map_smul, tmul_smul]
 
-noncomputable def Eqv {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R) :
-(LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) ≃ₗ[Localization S] LocalizedModule S (M ⊗[R] N) := sorry
+#check TensorProduct.lift <| InvBiMap M N S
+
+noncomputable def InvMapbeforeLocalized : M ⊗[R] N →ₗ[R]
+    LocalizedModule S M ⊗[Localization S] LocalizedModule S N :=
+  TensorProduct.lift <| InvBiMap _ _ _
+
+noncomputable def InvMap : LocalizedModule S (M ⊗[R] N) →ₗ[Localization S]
+    (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) :=
+  LiftOnLocalization _ <| InvMapbeforeLocalized _ _ _
+
+noncomputable def Eqv : (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N)
+    ≃ₗ[Localization S] LocalizedModule S (M ⊗[R] N) := by
+  refine LinearEquiv.ofLinear (Map _ _ _) (InvMap _ _ _) ?_ ?_
+  · ext x
+    dsimp
+    unfold InvMap InvMapbeforeLocalized InvBiMap Map
+
+    sorry
+  · sorry
