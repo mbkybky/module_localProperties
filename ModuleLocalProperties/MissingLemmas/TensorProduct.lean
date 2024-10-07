@@ -6,63 +6,27 @@ Authors: Song Yi
 import Mathlib.Algebra.Module.LocalizedModule
 import Mathlib.RingTheory.Flat.Basic
 import Mathlib.RingTheory.IsTensorProduct
+import ModuleLocalProperties.MissingLemmas.LocalizedModule
 
-open Submodule IsLocalizedModule LocalizedModule Ideal IsLocalization TensorProduct
+open  TensorProduct
 
-noncomputable def Map1 {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R) :
-M →ₗ[R] N →ₗ[R] LocalizedModule S (M ⊗[R] N) where
-  toFun := fun m => {
-      toFun := fun n => LocalizedModule.mk (m ⊗ₜ[R] n) 1
-      map_add' := by
-        intro n1 n2
-        simp only [tmul_add, mk_add_mk, one_smul, mul_one]
-      map_smul' := by
-        intro r n
-        simp only [tmul_smul, RingHom.id_apply, smul'_mk]
-    }
-  map_add' := by
-    intro m1 m2
-    ext n
-    dsimp
-    simp only [add_tmul, mk_add_mk, one_smul, mul_one]
-  map_smul' := by
-    intro r m
-    ext n
-    dsimp
-    simp only [smul'_mk, smul_tmul']
+#check TensorProduct.mk
 
-noncomputable def Map2 {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R) :
-M → LocalizedModule S N →ₗ[R] LocalizedModule S (M ⊗[R] N) :=by
-  intro m
-  use LocalizedModule.lift S (Map1 M N S m) (by
-  intro x
-  apply isUnit_iff_exists.mpr ⟨{
-    toFun := sorry
-    map_add' := sorry
-    map_smul' := sorry
-  }, sorry, sorry⟩
-  )
-  sorry
+variable {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R)
 
+noncomputable def Map1 :
+    LocalizedModule S M →ₗ[Localization S] LocalizedModule S (N →ₗ[R] (M ⊗[R] N)) :=
+  LocalizedModule.map' _ <| TensorProduct.mk _ _ _
 
+noncomputable def BiMap : LocalizedModule S M →ₗ[Localization S]
+    LocalizedModule S N →ₗ[Localization S] LocalizedModule S (M ⊗[R] N) where
+  toFun := fun m => LocalizedMapLift _ <| Map1 _ _ _ m
+  map_add' := fun _ _ => by simp only [map_add]
+  map_smul' := fun r m => by simp only [map_smul, RingHom.id_apply]
 
-
-noncomputable def BiMap {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R) :
-(LocalizedModule S M) →ₗ[Localization S] (LocalizedModule S N) →ₗ[Localization S] LocalizedModule S (M ⊗[R] N) where
-  toFun := by
-    intro x
-
-    exact {
-      toFun := sorry
-      map_add' := sorry
-      map_smul' := sorry
-    }
-
-  map_add' := sorry
-  map_smul' := sorry
-
-noncomputable def Map {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R) :
-(LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) →ₗ[Localization S] LocalizedModule S (M ⊗[R] N) := sorry
+noncomputable def Map : (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N)
+    →ₗ[Localization S] LocalizedModule S (M ⊗[R] N) :=
+  TensorProduct.lift <| BiMap _ _ _
 
 noncomputable def Eqv {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R) :
 (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) ≃ₗ[Localization S] LocalizedModule S (M ⊗[R] N) := sorry

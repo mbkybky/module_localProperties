@@ -7,7 +7,7 @@ import Mathlib.Algebra.Module.Submodule.Localization
 
 import ModuleLocalProperties.Defs
 
-open Submodule IsLocalizedModule LocalizedModule Ideal IsLocalization TensorProduct
+open Submodule TensorProduct
 
 section LiftOnLocalization
 
@@ -50,7 +50,7 @@ variable {R : Type*} [CommRing R] (S : Submonoid R) {M N : Type*}
     [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N]
 
 noncomputable def LocalizedModule.map' :
-    (M →ₗ[R] N) →ₗ[R] (LocalizedModule S M) →ₗ[Localization S] (LocalizedModule S N) where
+    (M →ₗ[R] N) →ₗ[R] LocalizedModule S M →ₗ[Localization S] LocalizedModule S N where
   toFun := fun f => LinearMap.extendScalarsOfIsLocalization S _ <| LocalizedModule.map S f
   map_add' := by
     intro f g
@@ -61,30 +61,16 @@ noncomputable def LocalizedModule.map' :
     intro r f
     ext x
     dsimp
-    rw [_root_.map_smul, LinearMap.smul_apply]
+    rw [map_smul, LinearMap.smul_apply]
 
-def LocalizedMapSubmodule : Submodule (Localization S)
-    ((LocalizedModule S M) →ₗ[Localization S] (LocalizedModule S N)) where
-  carrier := {g | ∃ f ,∃ s : S, g = (Localization.mk 1 s) • (LocalizedModule.map' _ f)}
-  add_mem' := by
-    intro g1 g2 ⟨f1, s1, h1⟩ ⟨f2, s2, h2⟩
-    use s2 • f1 + s1 • f2, s1 * s2
-    rw [h1, h2]
-    simp only [ map_add, LinearMap.map_smul_of_tower, smul_add]
-    symm
-    nth_rw 1 [smul_comm,← smul_assoc]
-    simp
-    nth_rw 2 [smul_comm]
+noncomputable def LocalizedMapLift : LocalizedModule S (M →ₗ[R] N) →ₗ[Localization S]
+    LocalizedModule S M →ₗ[Localization S] LocalizedModule S N :=
+  LiftOnLocalization _ (M := (M →ₗ[R] N))
+  (N := LocalizedModule S M →ₗ[Localization S] LocalizedModule S N)
+  <| LocalizedModule.map' _
 
-    sorry
-  zero_mem' := by
-    use 0, 1
-    rw [Localization.mk_eq_monoidOf_mk', _root_.map_zero, smul_zero]
-  smul_mem' := by
-    intro r g ⟨f, s, h1⟩
-    haveI h2 : IsLocalization S (Localization S) := inferInstance
-    have := h2.surj r
-    sorry
+lemma injective_LocalizedMapLift: Function.Injective (α := LocalizedModule S (M →ₗ[R] N))
+    (LocalizedMapLift S) := sorry
 
 end LocalizedMapSubmodule
 /-
