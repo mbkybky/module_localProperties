@@ -22,11 +22,20 @@ noncomputable def BiMap : LocalizedModule S M →ₗ[Localization S]
     LocalizedModule S N →ₗ[Localization S] LocalizedModule S (M ⊗[R] N) where
   toFun := fun m => LocalizedMapLift _ <| Map1 _ _ _ m
   map_add' := fun _ _ => by simp only [map_add]
-  map_smul' := fun r m => by simp only [map_smul, RingHom.id_apply]
+  map_smul' := fun _ _ => by simp only [map_smul, RingHom.id_apply]
 
 noncomputable def Map : (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N)
     →ₗ[Localization S] LocalizedModule S (M ⊗[R] N) :=
   TensorProduct.lift <| BiMap _ _ _
+
+#check LocalizedModule.lift'
+
+noncomputable def InvMap : LocalizedModule S (M ⊗[R] N) →--ₗ[Localization S]
+    (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) := by
+  intro lc_ts
+  haveI : Module R (LocalizedModule S (M ⊗[R] N)) := inferInstance
+  --haveI : IsLocalizedModule S (fun m => LocalizedModule.mk m 1) :=sorry
+  sorry
 
 noncomputable def Eqv {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R) :
 (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) ≃ₗ[Localization S] LocalizedModule S (M ⊗[R] N) := sorry
