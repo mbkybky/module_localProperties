@@ -8,14 +8,47 @@ import Mathlib.RingTheory.IsTensorProduct
 
 universe u v
 
+namespace Module.Flat
+
 open LinearMap Submodule TensorProduct DirectSum Module
 
-theorem Module.Flat.iff_isTensorProduct_lift_injective (R M : Type*) [CommRing R] [AddCommGroup M]
-    [Module R M] :  Module.Flat R M ↔ ∀ (I : Ideal R) {N : Type*} [AddCommGroup N] [Module R N]
-    (f : I →ₗ[R] M →ₗ[R] N) (h : IsTensorProduct f),
-    Function.Injective (IsTensorProduct.lift h ((lsmul R M).comp I.subtype)) := sorry
+section IsTensorProduct
 
-namespace Module.Flat
+variable (R : Type u) (M : Type v) [CommRing R] [AddCommGroup M] [Module R M]
+
+lemma eqid (I : Ideal R) : (isTensorProduct R I M).equiv = LinearEquiv.refl R _ :=
+  LinearEquiv.ext fun x ↦ by
+    rw [IsTensorProduct.equiv_apply, LinearEquiv.refl_apply, lift_mk, id_apply]
+
+lemma diagram (I : Ideal R) : (isTensorProduct R I M).lift (lsmul R M ∘ₗ Submodule.subtype I)
+    = (TensorProduct.lid R M) ∘ₗ (rTensor M (Submodule.subtype I)) := by
+  ext x m
+  simp only [IsTensorProduct.lift, AlgebraTensorModule.curry_apply, curry_apply,
+    LinearMap.coe_restrictScalars, restrictScalars_comp, coe_comp, LinearEquiv.coe_coe,
+    Function.comp_apply, rTensor_tmul, coe_subtype, lid_tmul]
+  rw [eqid, LinearEquiv.refl_symm, LinearEquiv.refl_apply, lift.tmul, coe_comp, coe_subtype,
+    Function.comp_apply, lsmul_apply]
+
+theorem iff_isTensorProduct_lift_injective : Module.Flat R M ↔ ∀ (I : Ideal R)
+  {N : Type max u v} [AddCommGroup N] [Module R N] (f : I →ₗ[R] M →ₗ[R] N) (h : IsTensorProduct f),
+    Function.Injective (IsTensorProduct.lift h ((lsmul R M).comp I.subtype)) := by
+  constructor
+  · intro H I N _ _ f tf
+    have eq : (TensorProduct.lid R M).toLinearMap ∘ₗ (rTensor M (Submodule.subtype I)) ∘ₗ tf.equiv.symm.toLinearMap = (tf.lift (lsmul R M ∘ₗ Submodule.subtype I)) := by
+      rw [← comp_assoc, ← diagram, IsTensorProduct.lift, IsTensorProduct.lift, eqid, LinearEquiv.refl_symm]; rfl
+    simp only [← eq, coe_comp, LinearEquiv.coe_coe, EmbeddingLike.comp_injective,
+      EquivLike.injective_comp]
+    exact ((Module.Flat.iff_rTensor_injective' R M).mp H I)
+  · intro H
+    apply (Module.Flat.iff_rTensor_injective' R M).mpr
+    intro I
+    have := H I (TensorProduct.mk R I M) (isTensorProduct R I M)
+    rw [diagram, coe_comp, LinearEquiv.coe_coe, EmbeddingLike.comp_injective] at this
+    exact this
+
+end IsTensorProduct
+
+section rTensor
 
 variable (R : Type u) (M : Type v) [CommRing R] [AddCommGroup M] [Module R M]
 
@@ -46,5 +79,7 @@ theorem iff_lTensor_preserves_injective_linearMap' : Flat R M ↔
     ∀ ⦃N N' : Type max u v⦄ [AddCommGroup N] [AddCommGroup N'] [Module R N] [Module R N']
       (f : N →ₗ[R] N') (_ : Function.Injective f), Function.Injective (f.lTensor M) := by
   simp_rw [iff_rTensor_preserves_injective_linearMap', LinearMap.lTensor_inj_iff_rTensor_inj]
+
+end rTensor
 
 end Module.Flat
