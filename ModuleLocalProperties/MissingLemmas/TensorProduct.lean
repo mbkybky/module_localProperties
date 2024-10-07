@@ -10,8 +10,6 @@ import ModuleLocalProperties.MissingLemmas.LocalizedModule
 
 open  TensorProduct LocalizedModule
 
-#check TensorProduct.mk
-
 variable {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R)
 
 noncomputable def Map1 :
@@ -28,8 +26,6 @@ noncomputable def Map : (LocalizedModule S M) ⊗[Localization S] (LocalizedModu
     →ₗ[Localization S] LocalizedModule S (M ⊗[R] N) :=
   TensorProduct.lift <| BiMap _ _ _
 
-#check LocalizedModule.lift'
-
 noncomputable def InvBiMap : M →ₗ[R] N →ₗ[R]
     (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) :=
   LinearMap.mk₂ _ (fun m n => mkLinearMap _ _ m ⊗ₜ mkLinearMap _ _ n)
@@ -37,8 +33,6 @@ noncomputable def InvBiMap : M →ₗ[R] N →ₗ[R]
   fun _ _ _ => by simp only [map_smul, smul_tmul']
   fun _ _ _ => by simp only [map_add, tmul_add]
   fun _ _ _ => by simp only [map_smul, tmul_smul]
-
-#check TensorProduct.lift <| InvBiMap M N S
 
 noncomputable def InvMapbeforeLocalized : M ⊗[R] N →ₗ[R]
     LocalizedModule S M ⊗[Localization S] LocalizedModule S N :=
@@ -48,12 +42,39 @@ noncomputable def InvMap : LocalizedModule S (M ⊗[R] N) →ₗ[Localization S]
     (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) :=
   LiftOnLocalization _ <| InvMapbeforeLocalized _ _ _
 
+#check LocalizedModule.lift
+#check LocalizedModule.lift_comp
+#check LocalizedModule.lift_unique
+#check TensorProduct.lift
+#check TensorProduct.lift.tmul
+#check TensorProduct.lift_compr₂
+
 noncomputable def Eqv : (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N)
     ≃ₗ[Localization S] LocalizedModule S (M ⊗[R] N) := by
   refine LinearEquiv.ofLinear (Map _ _ _) (InvMap _ _ _) ?_ ?_
   · ext x
+
+    unfold InvMap LiftOnLocalization LiftOnLocalization' LocalizedModule.lift
     dsimp
-    unfold InvMap InvMapbeforeLocalized InvBiMap Map
+    show (Map M N S) (lift' S (InvMapbeforeLocalized M N S) _ x) = x
+    unfold InvMapbeforeLocalized InvBiMap
+
+    dsimp
+    unfold TensorProduct.lift liftAux lift'
+    dsimp
 
     sorry
-  · sorry
+  · unfold Map
+    rw [← TensorProduct.lift_compr₂]
+    suffices (BiMap M N S).compr₂ (InvMap M N S) = mk _ _ _ from by rw [this, TensorProduct.lift_mk]
+    ext m n
+    simp
+    unfold InvMap LiftOnLocalization
+    simp
+    unfold LiftOnLocalization'
+    dsimp
+    --have :=
+    rw[LocalizedModule.lift_unique S _ _ _ _]
+    sorry
+    sorry
+    sorry
