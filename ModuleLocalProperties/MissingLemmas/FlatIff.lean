@@ -1,12 +1,12 @@
 /-
 Copyright (c) 2024 Yongle Hu. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Yongle Hu
+Authors: Yongle Hu, Sihan Su
 -/
 import Mathlib.RingTheory.Flat.Basic
 import Mathlib.RingTheory.IsTensorProduct
 
-universe u v
+universe v' u v
 
 namespace Module.Flat
 
@@ -80,6 +80,104 @@ theorem iff_lTensor_preserves_injective_linearMap' : Flat R M ↔
       (f : N →ₗ[R] N') (_ : Function.Injective f), Function.Injective (f.lTensor M) := by
   simp_rw [iff_rTensor_preserves_injective_linearMap', LinearMap.lTensor_inj_iff_rTensor_inj]
 
+/-- M is flat if and only if `f ⊗ 𝟙 M` is injective whenever `f` is an injective linear map. -/
+lemma iff_rTensor_preserves_injective_linearMap'' [Small.{v'} R] [Small.{v'} M] : Flat R M ↔
+    ∀ ⦃N N' : Type v'⦄ [AddCommGroup N] [AddCommGroup N'] [Module R N] [Module R N']
+      (f : N →ₗ[R] N') (_ : Function.Injective f), Function.Injective (f.rTensor M) := by
+  refine (iff_linearEquiv R M (Shrink.{v'} M) (Shrink.linearEquiv M R).symm).trans <|
+    iff_characterModule_injective.trans <|
+      (injective_characterModule_iff_rTensor_preserves_injective_linearMap R (Shrink.{v'} M)).trans
+        <| forall₅_congr <| fun N N' _ _ _ => forall₃_congr (fun _ f _ => ?_)
+  let frmu := f.rTensor (Shrink.{v'} M)
+  let frm := f.rTensor M
+  let emn := TensorProduct.congr (LinearEquiv.refl R N) (Shrink.linearEquiv M R)
+  let emn' := TensorProduct.congr (LinearEquiv.refl R N') (Shrink.linearEquiv M R)
+  have h : emn'.toLinearMap.comp frmu = frm.comp emn.toLinearMap := TensorProduct.ext rfl
+  apply (EmbeddingLike.comp_injective frmu emn').symm.trans
+  apply Iff.trans (Eq.to_iff (congrArg Function.Injective _)) (EquivLike.injective_comp emn frm)
+  exact congrArg DFunLike.coe h
+
+/-- M is flat if and only if `𝟙 M ⊗ f` is injective whenever `f` is an injective linear map. -/
+lemma iff_lTensor_preserves_injective_linearMap'' [Small.{v'} R] [Small.{v'} M] : Flat R M ↔
+    ∀ ⦃N N' : Type v'⦄ [AddCommGroup N] [AddCommGroup N'] [Module R N] [Module R N']
+      (L : N →ₗ[R] N'), Function.Injective L → Function.Injective (L.lTensor M) := by
+  simp_rw [iff_rTensor_preserves_injective_linearMap'', LinearMap.lTensor_inj_iff_rTensor_inj]
+
+-- The following two lemmas have been proved in PR [#17484](https://github.com/leanprover-community/mathlib4/pull/17484)
+
+/-- M is flat if and only if `M ⊗ -` is a left exact functor. -/
+theorem iff_lTensor_exact''' [Small.{v'} R] [Small.{v'} M] : Flat R M ↔
+    ∀ ⦃N N' N'' : Type v'⦄ [AddCommGroup N] [AddCommGroup N'] [AddCommGroup N'']
+      [Module R N] [Module R N'] [Module R N''] ⦃f : N →ₗ[R] N'⦄ ⦃g : N' →ₗ[R] N''⦄,
+        Function.Exact f g → Function.Exact (f.lTensor M) (g.lTensor M) := sorry
+
+/-- M is flat if and only if `- ⊗ M` is a left exact functor. -/
+theorem iff_rTensor_exact' [Small.{v'} R] [Small.{v'} M] : Flat R M ↔
+    ∀ ⦃N N' N'' : Type v'⦄ [AddCommGroup N] [AddCommGroup N'] [AddCommGroup N'']
+      [Module R N] [Module R N'] [Module R N''] ⦃f : N →ₗ[R] N'⦄ ⦃g : N' →ₗ[R] N''⦄,
+        Function.Exact f g → Function.Exact (f.rTensor M) (g.rTensor M) := sorry
+
 end rTensor
 
 end Module.Flat
+
+section lTensor'
+
+noncomputable def LinearMap.lTensor' {R : Type*} [CommSemiring R] {M N P : Type*}
+    [AddCommMonoid M]
+    [AddCommMonoid N] [AddCommMonoid P] [Module R M] [Module R N] [Module R P] (f : N →ₗ[R] P)
+    {N' P' : Type*} [AddCommMonoid N'] [AddCommMonoid P'] [Module R N'] [Module R P']
+    {fn : M →ₗ[R] N →ₗ[R] N'} (hn : IsTensorProduct fn) {fp : M →ₗ[R] P →ₗ[R] P'}
+    (hp : IsTensorProduct fp) : N' →ₗ[R] P' :=
+  IsTensorProduct.map hn hp id f
+
+noncomputable def LinearMap.rTensor' {R : Type*} [CommSemiring R] {M N P : Type*} [AddCommMonoid M]
+    [AddCommMonoid N] [AddCommMonoid P] [Module R M] [Module R N] [Module R P] (f : N →ₗ[R] P)
+    {N' P' : Type*} [AddCommMonoid N'] [AddCommMonoid P'] [Module R N'] [Module R P']
+    {fn : N →ₗ[R] M →ₗ[R] N'} (hn : IsTensorProduct fn) {fp : P →ₗ[R] M →ₗ[R] P'}
+    (hp : IsTensorProduct fp) : N' →ₗ[R] P' :=
+  IsTensorProduct.map hn hp f id
+
+namespace Module.Flat
+
+open IsTensorProduct LinearMap
+
+variable (R : Type u) (M : Type v) [CommRing R] [AddCommGroup M] [Module R M]
+
+lemma iff_rTensor'_preserves_injective_linearMap [Small.{v'} R] [Small.{v'} M] : Flat R M ↔
+    ∀ ⦃N N' : Type v'⦄ [AddCommGroup N] [AddCommGroup N'] [Module R N] [Module R N']
+      (f : N →ₗ[R] N') (_ : Function.Injective f)
+      {P : Type v'} [AddCommGroup P] [Module R P] {p : N →ₗ[R] M →ₗ[R] P} (h : IsTensorProduct p)
+      {P' : Type v'} [AddCommGroup P'] [Module R P'] {p' : N' →ₗ[R] M →ₗ[R] P'}
+      (h' : IsTensorProduct p'), Function.Injective (f.rTensor' h h') := sorry
+
+lemma iff_lTensor'_preserves_injective_linearMap [Small.{v'} R] [Small.{v'} M] : Flat R M ↔
+    ∀ ⦃N N' : Type v'⦄ [AddCommGroup N] [AddCommGroup N'] [Module R N] [Module R N']
+      (f : N →ₗ[R] N') (_ : Function.Injective f)
+      {P : Type v'} [AddCommGroup P] [Module R P] {p : M →ₗ[R] N →ₗ[R] P} (h : IsTensorProduct p)
+      {P' : Type v'} [AddCommGroup P'] [Module R P'] {p' : M →ₗ[R] N' →ₗ[R] P'}
+      (h' : IsTensorProduct p'), Function.Injective (f.lTensor' h h') := sorry
+
+/-- M is flat if and only if `M ⊗ -` is a left exact functor. -/
+theorem iff_lTensor'_exact [Small.{v'} R] [Small.{v'} M] : Flat R M ↔
+    ∀ ⦃N N' N'' : Type v'⦄ [AddCommGroup N] [AddCommGroup N'] [AddCommGroup N'']
+      [Module R N] [Module R N'] [Module R N''] ⦃f : N →ₗ[R] N'⦄ ⦃g : N' →ₗ[R] N''⦄
+      {P : Type v'} [AddCommGroup P] [Module R P] {p : M →ₗ[R] N →ₗ[R] P} (h : IsTensorProduct p)
+      {P' : Type v'} [AddCommGroup P'] [Module R P'] {p' : M →ₗ[R] N' →ₗ[R] P'}
+      (h' : IsTensorProduct p') {P'' : Type v'} [AddCommGroup P''] [Module R P'']
+      {p'' : M →ₗ[R] N'' →ₗ[R] P''} (h'' : IsTensorProduct p''),
+      Function.Exact f g → Function.Exact (f.lTensor' h h') (g.lTensor' h' h'') := sorry
+
+/-- M is flat if and only if `M ⊗ -` is a right exact functor. -/
+theorem iff_rTensor'_exact [Small.{v'} R] [Small.{v'} M] : Flat R M ↔
+    ∀ ⦃N N' N'' : Type v'⦄ [AddCommGroup N] [AddCommGroup N'] [AddCommGroup N'']
+      [Module R N] [Module R N'] [Module R N''] ⦃f : N →ₗ[R] N'⦄ ⦃g : N' →ₗ[R] N''⦄
+      {P : Type v'} [AddCommGroup P] [Module R P] {p : N →ₗ[R] M →ₗ[R] P} (h : IsTensorProduct p)
+      {P' : Type v'} [AddCommGroup P'] [Module R P'] {p' : N' →ₗ[R] M →ₗ[R] P'}
+      (h' : IsTensorProduct p') {P'' : Type v'} [AddCommGroup P''] [Module R P'']
+      {p'' : N'' →ₗ[R] M →ₗ[R] P''} (h'' : IsTensorProduct p''),
+      Function.Exact f g → Function.Exact (f.rTensor' h h') (g.rTensor' h' h'') := sorry
+
+end Module.Flat
+
+end lTensor'
