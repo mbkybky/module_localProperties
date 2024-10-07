@@ -4,16 +4,19 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: SiHan Su
 -/
 import Mathlib.RingTheory.Flat.Basic
+import Mathlib.Algebra.Module.Submodule.Localization
 
 import ModuleLocalProperties.MissingLemmas.LocalizedModule
+import ModuleLocalProperties.MissingLemmas.Submodule
+import ModuleLocalProperties.MissingLemmas.FlatIff
+import ModuleLocalProperties.MissingLemmas.TensorProduct
+import ModuleLocalProperties.Basic
 
 open Submodule IsLocalizedModule LocalizedModule Ideal IsLocalization
 
-#check Module.Flat.iff_rTensor_injective'
-
 lemma inj_of_local {R M N : Type*} [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (f : M →ₗ[R] N) (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Function.Injective (map' J.primeCompl f)) : Function.Injective f := by
-  refine LinearMap.ker_eq_bot.mp ?_
-  sorry
+  simp only [← LinearMap.ker_eq_bot] at h ⊢
+  exact submodule_eq_bot_of_localization _ fun J hJ ↦ (LinearMap.localized'_ker_eq_ker_localizedMap _ _ _ _ f).trans (h J hJ)
 
 #check Localization.localRingHom
 #check LocalizedModule.map
@@ -59,25 +62,25 @@ example {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] (h : ∀ (J : I
 #check IsLocalization.map_comap
 #check mem_map_algebraMap_iff
 
-example {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Module.Flat (Localization.AtPrime J) (LocalizedModule.AtPrime J M)) : Module.Flat R M := by
-  apply (Module.Flat.iff_rTensor_injective' R M).mpr
-  intro I
+
+example {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M]
+    (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Module.Flat (Localization.AtPrime J)
+    (LocalizedModule.AtPrime J M)) : Module.Flat R M := by
+  apply (Module.Flat.iff_rTensor_preserves_injective_linearMap' R M).mpr
+  intro N N' _ _ _ _ f finj
   apply inj_of_local
-  intro J maxJ
-  have hj := (Module.Flat.iff_rTensor_injective' _ _).mp (h J maxJ) (I.map (algebraMap R (Localization J.primeCompl)))
-  apply (LinearMap.ker_eq_bot (f := ((LocalizedModule.map _) _))).mp
-  apply LinearMap.ker_eq_bot'.mpr
-  intro m hm
-  apply LinearMap.ker_eq_bot.mpr at hj
-  apply LinearMap.ker_eq_bot'.mp at hj
-  simp only at hj
+  intro J hJ
+  have inj : Function.Injective (map' J.primeCompl f) := by
+    apply LinearMap.ker_eq_bot.mp
+    unfold map' LocalizedModule.map
+    rw [LinearMap.coe_mk, AddHom.coe_mk, ← LinearMap.localized'_ker_eq_ker_localizedMap,
+      LinearMap.ker_eq_bot.mpr finj, localized'_bot]
+  have H := (Module.Flat.iff_rTensor_preserves_injective_linearMap' _ _).mp (h J hJ) (map' J.primeCompl f) inj
+  set g1 := (LinearMap.rTensor (LocalizedModule.AtPrime J M) ((map' J.primeCompl) f))
+  set g2 := ((map' J.primeCompl) (LinearMap.rTensor M f))
+  have : g1 = (Eqv N' M J.primeCompl).symm ∘ₗ g2 ∘ₗ (Eqv N M J.primeCompl) := by
 
-  sorry
-
-#check Module.Flat.iff_rTensor_preserves_injective_linearMap
-
-def ev {R : Type*} (N M : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R) : LocalizedModule S (TensorProduct R N M) ≃ₗ[R] TensorProduct (Localization S) (LocalizedModule S N) (LocalizedModule S M) := by sorry
-
-example {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Module.Flat (Localization.AtPrime J) (LocalizedModule.AtPrime J M)) : Module.Flat R M := by
-
-  sorry
+    sorry
+  simp only [this, LinearMap.coe_comp, LinearEquiv.coe_coe, EmbeddingLike.comp_injective,
+    EquivLike.injective_comp] at H
+  exact H

@@ -51,14 +51,21 @@ localized J.primeCompl N = localized J.primeCompl P) : N = P :=
   eq_of_le_of_le (submodule_le_of_localization _ _ (fun J hJ ↦ le_of_eq (h J hJ)))
   (submodule_le_of_localization _ _ (fun J hJ ↦ le_of_eq (h J hJ).symm))
 
+lemma submodule_eq_bot_of_localization {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M]
+    (N : Submodule R M) (h : ∀ (J : Ideal R) (_ : J.IsMaximal), localized J.primeCompl N = ⊥) :
+  N = ⊥ := submodule_eq_of_localization _ _ fun _ _ ↦ by simp only [h, localized_bot]
+
+lemma submodule_eq_top_of_localization {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M]
+    (N : Submodule R M) (h : ∀ (J : Ideal R) (_ : J.IsMaximal), localized J.primeCompl N = ⊤) :
+  N = ⊤ := submodule_eq_of_localization _ _ fun _ _ ↦ by simp only [h, localized_top]
+
 lemma exact_of_localization {R M₀ M₁ M₂ : Type*} [CommRing R] [AddCommGroup M₀] [Module R M₀]
 [AddCommGroup M₁] [Module R M₁] [AddCommGroup M₂] [Module R M₂] (f : M₀ →ₗ[R] M₁) (g : M₁ →ₗ[R] M₂)
 (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Function.Exact
   ((map J.primeCompl f).extendScalarsOfIsLocalization J.primeCompl (Localization J.primeCompl))
   ((map J.primeCompl g).extendScalarsOfIsLocalization J.primeCompl (Localization J.primeCompl))) :
     Function.Exact f g := by
-  rw [LinearMap.exact_iff]
-  simp only [LinearMap.exact_iff] at h
+  simp only [LinearMap.exact_iff] at h ⊢
   apply submodule_eq_of_localization
   intro J hJ
   unfold localized
@@ -110,26 +117,19 @@ lemma submodule_eq_of_localization_finitespan {R M : Type*} [CommRing R] [AddCom
   eq_of_le_of_le (submodule_le_of_localization_finitespan _ _ s spn (fun r ↦ le_of_eq (h r)))
   (submodule_le_of_localization_finitespan _ _ s spn (fun r ↦ le_of_eq (h r).symm))
 
-lemma submodule_eq_bot_of_localization_finitespan {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] (N : Submodule R M) (s : Finset R) (spn : span (s : Set R) = ⊤) (h : ∀ r : s, localized (Submonoid.powers r.1) N = ⊥) : N = ⊥ := by
-  apply submodule_eq_of_localization_finitespan _ _ _ spn
-  simp only [h, Subtype.forall]
-  intros
-  rw [localized_bot]
+lemma submodule_eq_bot_of_localization_finitespan {R M : Type*} [CommRing R] [AddCommGroup M]
+    [Module R M] (N : Submodule R M) (s : Finset R) (spn : span (s : Set R) = ⊤)
+    (h : ∀ r : s, localized (Submonoid.powers r.1) N = ⊥) : N = ⊥ :=
+  submodule_eq_of_localization_finitespan _ _ _ spn fun _ ↦ by simp only [h, localized_bot]
 
-lemma submodule_eq_top_of_localization_finitespan {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] (N : Submodule R M) (s : Finset R) (spn : span (s : Set R) = ⊤) (h : ∀ r : s, localized (Submonoid.powers r.1) N = ⊤) : N = ⊤ := by
-  apply submodule_eq_of_localization_finitespan _ _ _ spn
-  simp only [h, Subtype.forall]
-  intros
-  rw [localized_top]
+lemma submodule_eq_top_of_localization_finitespan {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] (N : Submodule R M) (s : Finset R) (spn : span (s : Set R) = ⊤) (h : ∀ r : s, localized (Submonoid.powers r.1) N = ⊤) : N = ⊤ := submodule_eq_of_localization_finitespan _ _ _ spn fun _ ↦ by simp only [h, localized_top]
 
 lemma exact_of_localization_finitespan {R M₀ M₁ M₂ : Type*} [CommRing R] [AddCommGroup M₀] [Module R M₀] [AddCommGroup M₁] [Module R M₁] [AddCommGroup M₂] [Module R M₂] (s : Finset R) (spn : span (s : Set R) = ⊤) (f : M₀ →ₗ[R] M₁) (g : M₁ →ₗ[R] M₂) (h : ∀ r : s, Function.Exact
   ((map (Submonoid.powers r.1) f).extendScalarsOfIsLocalization (Submonoid.powers r.1) (Localization (Submonoid.powers r.1)))
   ((map (Submonoid.powers r.1) g).extendScalarsOfIsLocalization (Submonoid.powers r.1) (Localization (Submonoid.powers r.1)))) :
     Function.Exact f g := by
-  rw [LinearMap.exact_iff]
-  simp only [LinearMap.exact_iff] at h
-  apply submodule_eq_of_localization_finitespan
-  exact spn
+  simp only [LinearMap.exact_iff] at h ⊢
+  apply submodule_eq_of_localization_finitespan _ _ _ spn
   intro r
   unfold localized
   rw [LinearMap.localized'_range_eq_range_localizedMap _ (mkLinearMap (Submonoid.powers r.1) M₀),
