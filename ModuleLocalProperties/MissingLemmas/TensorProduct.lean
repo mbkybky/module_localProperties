@@ -43,6 +43,7 @@ noncomputable def InvMap : LocalizedModule S (M ⊗[R] N) →ₗ[Localization S]
   LiftOnLocalization _ <| InvMapbeforeLocalized _ _ _
 
 #check LocalizedModule.lift
+#check LocalizedModule.lift_mk
 #check LocalizedModule.lift_comp
 #check LocalizedModule.lift_unique
 #check TensorProduct.lift

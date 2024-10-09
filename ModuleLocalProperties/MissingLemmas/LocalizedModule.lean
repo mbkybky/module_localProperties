@@ -7,7 +7,9 @@ import Mathlib.Algebra.Module.Submodule.Localization
 
 import ModuleLocalProperties.Defs
 
-open Submodule TensorProduct
+import ModuleLocalProperties.MissingLemmas.Units
+
+open Submodule TensorProduct LocalizedModule
 
 section LiftOnLocalization
 
@@ -19,28 +21,62 @@ def inv (s : S) : Module.End R N where
   map_add' := smul_add _
   map_smul' := smul_comm _
 
-lemma invertible (s : S) : IsUnit ((algebraMap R (Module.End R N)) s) := by
-  rw [isUnit_iff_exists]
-  use (inv _ s)
-  constructor
-  · ext n
-    rw [LinearMap.mul_apply, Module.algebraMap_end_apply, LinearMap.one_apply, inv]
-    dsimp
-    rw [← smul_assoc, Localization.smul_mk, smul_eq_mul, mul_one, Localization.mk_eq_monoidOf_mk',
-      Submonoid.LocalizationMap.mk'_self', one_smul]
-  · ext n
-    rw [LinearMap.mul_apply, Module.algebraMap_end_apply, LinearMap.one_apply, inv]
-    dsimp
-    rw [smul_comm, ← smul_assoc, Localization.smul_mk, smul_eq_mul, mul_one,
-      Localization.mk_eq_monoidOf_mk', Submonoid.LocalizationMap.mk'_self', one_smul]
+lemma right_inv (s : S) : (algebraMap R (Module.End R N)) s * inv S s = 1 := by
+  ext n
+  rw [LinearMap.mul_apply, Module.algebraMap_end_apply, LinearMap.one_apply, inv]
+  dsimp
+  rw [← smul_assoc, Localization.smul_mk, smul_eq_mul, mul_one, Localization.mk_eq_monoidOf_mk',
+    Submonoid.LocalizationMap.mk'_self', one_smul]
 
-noncomputable def LiftOnLocalization' (f : M →ₗ[R] N) : LocalizedModule S M →ₗ[R] N where
-    toFun := LocalizedModule.lift S f <| invertible _
+lemma left_inv (s : S) : inv S s * (algebraMap R (Module.End R N)) s = 1 := by
+  ext n
+  rw [LinearMap.mul_apply, Module.algebraMap_end_apply, LinearMap.one_apply, inv]
+  dsimp
+  rw [smul_comm, ← smul_assoc, Localization.smul_mk, smul_eq_mul, mul_one,
+    Localization.mk_eq_monoidOf_mk', Submonoid.LocalizationMap.mk'_self', one_smul]
+
+lemma invertible (s : S) : IsUnit ((algebraMap R (Module.End R N)) s) :=
+   isUnit_iff_exists.mpr ⟨(inv _ s), ⟨right_inv _ _, left_inv _ _⟩⟩
+
+lemma isinv (s : S) : (invertible S s).unit⁻¹.val = inv S s (N := N) :=
+  unit_inv_eq_of_both (left_inv _ _) (right_inv _ _)
+
+variable (f : M →ₗ[R] N)
+
+noncomputable def LiftOnLocalization' : LocalizedModule S M →ₗ[R] N where
+    toFun := lift S f <| invertible _
     map_add' := map_add _
     map_smul' := map_smul _
 
-noncomputable def LiftOnLocalization (f : M →ₗ[R] N) : LocalizedModule S M →ₗ[Localization S] N
+lemma LiftOnLocalization'_mk (m : M) (s : S) :
+    (LiftOnLocalization' S f) (mk m s) = Localization.mk 1 s • f m := by
+  show (lift S f <| invertible _) (mk m s) = Localization.mk 1 s • f m
+  rw [LocalizedModule.lift_mk, isinv]
+  rfl
+
+lemma LiftOnLocalization'_comp : LiftOnLocalization' S f ∘ₗ mkLinearMap S M = f :=
+  LocalizedModule.lift_comp _ _ <| invertible _
+
+lemma LiftOnLocalization'_unique (g : LocalizedModule S M →ₗ[R] N)
+    (h : g ∘ₗ mkLinearMap S M = f) : LiftOnLocalization' S f = g :=
+  LocalizedModule.lift_unique S f (invertible _) g h
+
+
+noncomputable def LiftOnLocalization : LocalizedModule S M →ₗ[Localization S] N
   := LinearMap.extendScalarsOfIsLocalization S _ (LiftOnLocalization' _ f)
+
+lemma LiftOnLocalization_mk (m : M) (s : S) :
+    (LiftOnLocalization S f) (mk m s) = Localization.mk 1 s • f m :=
+  LiftOnLocalization'_mk _ _ _ _
+
+lemma LiftOnLocalization_comp : LiftOnLocalization S f ∘ mkLinearMap S M = f := by
+  nth_rw 2 [← LiftOnLocalization'_comp S f]
+  rw [LinearMap.coe_comp]
+  rfl
+
+lemma LiftOnLocalization_unique (g : LocalizedModule S M →ₗ[R] N)
+    (h : g ∘ₗ mkLinearMap S M = f) : LiftOnLocalization S f = g :=
+  LiftOnLocalization'_unique S f g h
 
 end LiftOnLocalization
 
