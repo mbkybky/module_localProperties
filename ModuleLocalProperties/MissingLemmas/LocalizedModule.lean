@@ -278,5 +278,5 @@ lemma Map_inj : Function.Injective (Map0 S) := by
   rcases h with ⟨c, h⟩
   exact ⟨c, h⟩
 
-noncomputable def Map1 : Localization S ≃ₐ[R] LocalizedModule S R :=
+noncomputable def Map' : Localization S ≃ₐ[R] LocalizedModule S R :=
   AlgEquiv.ofBijective (Map0 S) ⟨Map_inj _,Map_surj _⟩
