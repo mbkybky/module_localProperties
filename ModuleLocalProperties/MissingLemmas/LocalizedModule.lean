@@ -81,7 +81,7 @@ lemma LiftOnLocalization_unique (g : LocalizedModule S M →ₗ[R] N)
 end LiftOnLocalization
 
 section LocalizedMapLift
-#check CommSemiring
+
 variable {R : Type*} [CommSemiring R] (S : Submonoid R) {M N : Type*}
     [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N]
 
@@ -134,8 +134,7 @@ end Localization_is_LocalizedModule
 example {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N]
     [Module R N] (S : Submonoid R) : IsLocalizedModule S (LocalizedModule.map S M N) := sorry
 -/
-#check quotEquivOfEq
-#check List.TFAE
+
 variable {R : Type*} [CommRing R] (S : Submonoid R)
 
 lemma equiv (a b : R × S) : r S R a b ↔ Localization.r S a b :=by
@@ -280,3 +279,140 @@ lemma Map_inj : Function.Injective (Map0 S) := by
 
 noncomputable def Map' : Localization S ≃ₐ[R] LocalizedModule S R :=
   AlgEquiv.ofBijective (Map0 S) ⟨Map_inj _,Map_surj _⟩
+
+section liftOnLocalizationModule
+
+namespace LocalizedModule
+variable {R : Type*} [CommSemiring R] (S : Submonoid R) {M N : Type*} [AddCommMonoid M] [Module R M]
+    [AddCommMonoid N] [Module R N] [Module (Localization S) N] [IsScalarTower R (Localization S) N]
+    (f : M →ₗ[R] N)
+
+lemma Localization.mk_canscel (r : R) (s t : S) : Localization.mk (r * t) (s * t) = Localization.mk r s :=by
+  rw[Localization.mk_eq_mk_iff, Localization.r_iff_exists]
+  use 1
+  dsimp
+  ring
+
+lemma Localization.mk_div (r : R) (s t : S) : t • (Localization.mk r (s * t)) = Localization.mk r s := by
+  show (t : R) • (Localization.mk r (s * t)) = Localization.mk r s
+  rw [Localization.smul_mk, smul_eq_mul, mul_comm, Localization.mk_canscel]
+
+lemma wd_for_LiftOnLocalizationModule' (a b : M × S) (h : r S M a b): Localization.mk 1 a.2 • f a.1 = Localization.mk 1 b.2 • f b.1 := by
+  rcases h with ⟨u, h⟩
+  repeat rw[← smul_assoc ,smul_eq_mul] at h
+  rw [← Localization.mk_div (t := (u * b.2)), smul_assoc, smul_comm,
+    ← LinearMap.CompatibleSMul.map_smul, h, ← mul_assoc]
+  symm
+  rw [← Localization.mk_div (t := (u * a.2)), smul_assoc, smul_comm,
+    ← LinearMap.CompatibleSMul.map_smul, mul_comm, mul_comm a.2]
+
+def LiftOnLocalizationModule' : LocalizedModule S M →ₗ[R] N where
+  toFun := fun x => liftOn x (fun (m, s) => (Localization.mk 1 s) • f m)
+    (fun a b h => wd_for_LiftOnLocalizationModule' _ _ _ _ h)
+  map_add' := by
+    dsimp
+    intro x y
+    induction' x with m s
+    induction' y with n t
+    rw [mk_add_mk, liftOn_mk, liftOn_mk, liftOn_mk, f.map_add]
+    symm
+    rw [← Localization.mk_div (t := t), smul_assoc, smul_comm, ← LinearMap.CompatibleSMul.map_smul]
+    rw [← Localization.mk_div 1 t (t := s), smul_assoc, smul_comm,
+      ← LinearMap.CompatibleSMul.map_smul f s, mul_comm, smul_add]
+  map_smul' := by
+    dsimp
+    intro r x
+    refine induction_on ?_ x
+    intro m s
+    rw[smul'_mk, liftOn_mk, liftOn_mk, f.map_smul, smul_comm]
+
+lemma LiftOnLocalizationModule'_mk (m : M) (s : S) :
+    (LiftOnLocalizationModule' S f) (mk m s) = Localization.mk 1 s • f m := by
+  show (mk m s).liftOn _ (fun a b h => wd_for_LiftOnLocalizationModule' _ _ _ _ h) = Localization.mk 1 s • f m
+  simp_rw [liftOn_mk]
+
+lemma LiftOnLocalizationModule'_comp : LiftOnLocalizationModule' S f ∘ₗ mkLinearMap S M = f := by
+  ext m
+  dsimp
+  rw[LiftOnLocalizationModule'_mk, Localization.mk_one, one_smul]
+
+lemma LiftOnLocalizationModule'_unique (g : LocalizedModule S M →ₗ[R] N)
+    (h : g ∘ₗ mkLinearMap S M = f) : LiftOnLocalizationModule' S f = g := by
+  ext x
+  induction' x with m s
+  rw [LiftOnLocalizationModule'_mk, ← h]
+  have : mk m s = Localization.mk 1 s • mk m 1 := by
+    rw[mk_smul_mk, one_smul, mul_one]
+  rw [LinearMap.coe_comp, Function.comp_apply,
+    mkLinearMap_apply, this,]
+  repeat rw [← LinearMap.extendScalarsOfIsLocalization_apply' S (Localization S) g]
+  rw [map_smul]
+
+def LiftOnLocalizationModule : LocalizedModule S M →ₗ[Localization S] N :=
+  LinearMap.extendScalarsOfIsLocalization S _ (LiftOnLocalizationModule' _ f)
+
+lemma LiftOnLocalizationModule_mk (m : M) (s : S) :
+    (LiftOnLocalizationModule S f) (mk m s) = Localization.mk 1 s • f m :=
+  LiftOnLocalizationModule'_mk _ _ _ _
+
+lemma LiftOnLocalizationModule_comp : LiftOnLocalizationModule S f ∘ mkLinearMap S M = f := by
+  nth_rw 2 [← LiftOnLocalizationModule'_comp S f]
+  rw [LinearMap.coe_comp]
+  rfl
+
+lemma LiftOnLocalizationModule_unique (g : LocalizedModule S M →ₗ[R] N)
+    (h : g ∘ₗ mkLinearMap S M = f) : LiftOnLocalizationModule' S f = g :=
+  LiftOnLocalizationModule'_unique S f g h
+
+end LocalizedModule
+
+section LocalizedModule.map''
+-- This is LocalizedModule.map and LocalizedModule.map' with out using IsLocalizedModule.map
+namespace LocalizedModule
+
+variable {R : Type*} [CommSemiring R] (S : Submonoid R) {M N : Type*}
+    [AddCommMonoid M] [Module R M] [AddCommMonoid N] [Module R N]
+
+noncomputable def map'' : (M →ₗ[R] N) →ₗ[R] LocalizedModule S M →ₗ[R] LocalizedModule S N where
+  toFun := fun f => LiftOnLocalizationModule' S <| mkLinearMap S N ∘ₗ f
+  map_add' := by
+    intro f g
+    dsimp
+    ext x
+    induction' x with m s
+    rw [LinearMap.add_apply]
+    simp only [LiftOnLocalizationModule'_mk, LinearMap.coe_comp, Function.comp_apply,
+      LinearMap.add_apply, map_add, smul_add]
+  map_smul' := by
+    intro r f
+    dsimp
+    ext x
+    induction' x with m s
+    simp only [LiftOnLocalizationModule'_mk, LinearMap.coe_comp,
+      Function.comp_apply, LinearMap.smul_apply, map_smul]
+    rw[smul_comm]
+
+lemma map''_mk (f : M →ₗ[R] N) (m : M) (s : S) : map'' S f (mk m s) = mk (f m) s := by
+  show (LiftOnLocalizationModule' S (mkLinearMap S N ∘ₗ f)) (mk m s) = mk (f m) s
+  rw[LiftOnLocalizationModule'_mk, LinearMap.coe_comp, Function.comp_apply,
+    mkLinearMap_apply, mk_smul_mk, one_smul, mul_one]
+
+noncomputable def map''' :
+    (M →ₗ[R] N) →ₗ[R] LocalizedModule S M →ₗ[Localization S] LocalizedModule S N where
+  toFun := fun f => LinearMap.extendScalarsOfIsLocalization S _ <| map'' S f
+  map_add' := by
+    intro f g
+    ext x
+    dsimp
+    rw [map_add, LinearMap.add_apply]
+  map_smul' := by
+    intro r f
+    ext x
+    dsimp
+    rw [map_smul, LinearMap.smul_apply]
+
+lemma map'''_mk (f : M →ₗ[R] N) (m : M) (s : S) : map''' S f (mk m s) = mk (f m) s :=
+  map''_mk _ _ _ _
+
+
+end LocalizedModule
