@@ -33,7 +33,7 @@ section LocalizedModule_TensorProduct_Exchange
 
 namespace LocalizedModule
 
-variable {R : Type*} {M N : Type*} [CommSemiring R] (S : Submonoid R) [AddCommMonoid M] [Module R M] [AddCommMonoid N]
+variable {R : Type*} [CommSemiring R] (S : Submonoid R) (M N : Type*) [AddCommMonoid M] [Module R M] [AddCommMonoid N]
   [Module R N]
 
 noncomputable def TensorProductBilinearMap : (LocalizedModule S M) →ₗ[Localization S]
@@ -41,16 +41,16 @@ noncomputable def TensorProductBilinearMap : (LocalizedModule S M) →ₗ[Locali
   BilinearMap S <| TensorProduct.mk R M N
 
 lemma TensorProductBilinearMap_mk (m : M) (n : N) (s t : S) :
-    TensorProductBilinearMap S (mk m s) (mk n t) = mk (m ⊗ₜ n) (s * t) :=
+    TensorProductBilinearMap S M N (mk m s) (mk n t) = mk (m ⊗ₜ n) (s * t) :=
   BilinearMap_mk S (TensorProduct.mk R M N) m n s t
 
 noncomputable def TensorProductMap : (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N)
     →ₗ[Localization S] LocalizedModule S (M ⊗[R] N) :=
-  TensorProduct.lift <| TensorProductBilinearMap S
+  TensorProduct.lift <| TensorProductBilinearMap S M N
 
 lemma TensorProductMap_mk (m : M) (n : N) (s t : S) :
-    TensorProductMap S ((mk m s) ⊗ₜ (mk n t)) = mk (m ⊗ₜ n) (s * t) :=
-  TensorProductBilinearMap_mk S m n s t
+    TensorProductMap S M N ((mk m s) ⊗ₜ (mk n t)) = mk (m ⊗ₜ n) (s * t) :=
+  TensorProductBilinearMap_mk S M N m n s t
 
 noncomputable def InvTensorProductBilinearMap : M →ₗ[R] N →ₗ[R]
     (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) :=
@@ -61,34 +61,34 @@ noncomputable def InvTensorProductBilinearMap : M →ₗ[R] N →ₗ[R]
   fun _ _ _ => by simp only [map_smul, tmul_smul]
 
 lemma InvTensorProductBilinearMap_apply (m : M) (n : N) :
-    InvTensorProductBilinearMap S m n = ((mk m 1) ⊗ₜ (mk n 1)) := rfl
+    InvTensorProductBilinearMap S M N m n = ((mk m 1) ⊗ₜ (mk n 1)) := rfl
 
 noncomputable def InvTensorProductMap' : M ⊗[R] N →ₗ[R]
     LocalizedModule S M ⊗[Localization S] LocalizedModule S N :=
-  TensorProduct.lift <| InvTensorProductBilinearMap S
+  TensorProduct.lift <| InvTensorProductBilinearMap S M N
 
 lemma InvTensorProductMap'_apply (m : M) (n : N) :
-    InvTensorProductMap' S (m ⊗ₜ n) = ((mk m 1) ⊗ₜ (mk n 1)) :=
-  InvTensorProductBilinearMap_apply S m n
+    InvTensorProductMap' S M N (m ⊗ₜ n) = ((mk m 1) ⊗ₜ (mk n 1)) :=
+  InvTensorProductBilinearMap_apply S M N m n
 
 noncomputable def InvTensorProductMap : LocalizedModule S (M ⊗[R] N) →ₗ[Localization S]
     (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) :=
-  LiftOnLocalizationModule _ <| InvTensorProductMap' S
+  LiftOnLocalizationModule _ <| InvTensorProductMap' S M N
 
 lemma InvTensorProductMap_apply (m : M) (n : N) (s : S) :
-    InvTensorProductMap S (mk (m ⊗ₜ n) s) = Localization.mk 1 s • ((mk m 1) ⊗ₜ (mk n 1)) := by
+    InvTensorProductMap S M N (mk (m ⊗ₜ n) s) = Localization.mk 1 s • ((mk m 1) ⊗ₜ (mk n 1)) := by
   unfold InvTensorProductMap
   rw [LiftOnLocalizationModule_mk, InvTensorProductMap'_apply]
 
 lemma InvTensorProductMap_apply' (m : M) (n : N) (s t : S) :
-    InvTensorProductMap S (mk (m ⊗ₜ n) (s * t)) = ((mk m s) ⊗ₜ (mk n t)) := by
+    InvTensorProductMap S M N (mk (m ⊗ₜ n) (s * t)) = ((mk m s) ⊗ₜ (mk n t)) := by
   rw [InvTensorProductMap_apply]
   symm
   rw [← mk_right_smul_mk_den_one, ← mk_right_smul_mk_den_one (s := t), TensorProduct.smul_tmul_smul,
     Localization.mk_mul, one_mul]
 
 lemma TensorProductMap_rightInv :
-    TensorProductMap S ∘ₗ (InvTensorProductMap S (M := M) (N := N)) = LinearMap.id := by
+    TensorProductMap S M N ∘ₗ (InvTensorProductMap S M N) = LinearMap.id := by
   ext x
   induction' x with y s
   dsimp
@@ -99,7 +99,7 @@ lemma TensorProductMap_rightInv :
   · rw [mk_add_mk_right, map_add, map_add, hm, hn]
 
 lemma TensorProductMap_leftInv :
-    InvTensorProductMap S ∘ₗ (TensorProductMap S (M := M) (N := N)) = LinearMap.id := by
+    InvTensorProductMap S M N ∘ₗ (TensorProductMap S M N) = LinearMap.id := by
   ext x y
   dsimp
   induction' x with m s
@@ -108,15 +108,15 @@ lemma TensorProductMap_leftInv :
 
 noncomputable def TensorProductEquiv : (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N)
     ≃ₗ[Localization S] LocalizedModule S (M ⊗[R] N) :=
-  LinearEquiv.ofLinear (TensorProductMap S) (InvTensorProductMap S) (TensorProductMap_rightInv S)
-  (TensorProductMap_leftInv S)
+  LinearEquiv.ofLinear _ _ (TensorProductMap_rightInv S M N)
+  (TensorProductMap_leftInv S M N)
 
 lemma TensorProductEquiv_apply (m : M) (n : N) (s t : S) :
-    TensorProductEquiv S ((mk m s) ⊗ₜ (mk n t)) = mk (m ⊗ₜ n) (s * t) :=
-  TensorProductMap_mk S m n s t
+    TensorProductEquiv S M N ((mk m s) ⊗ₜ (mk n t)) = mk (m ⊗ₜ n) (s * t) :=
+  TensorProductMap_mk S M N m n s t
 
 lemma TensorProductEquiv_symm_apply (m : M) (n : N) (s : S) :
-    (TensorProductEquiv S).symm (mk (m ⊗ₜ n) s) = Localization.mk 1 s • ((mk m 1) ⊗ₜ (mk n 1)) :=
-  InvTensorProductMap_apply S m n s
+    (TensorProductEquiv S M N).symm (mk (m ⊗ₜ n) s) = Localization.mk 1 s • ((mk m 1) ⊗ₜ (mk n 1)) :=
+  InvTensorProductMap_apply S M N m n s
 
 end LocalizedModule

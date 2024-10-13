@@ -19,7 +19,7 @@ variable {R : Type*} [CommSemiring R] (S : Submonoid R) {M N : Type*} [AddCommMo
     [AddCommMonoid N] [Module R N] [Module (Localization S) N] [IsScalarTower R (Localization S) N]
     (f : M →ₗ[R] N)
 
-lemma Localization.mk_canscel (r : R) (s t : S) : Localization.mk (r * t) (s * t) = Localization.mk r s :=by
+lemma Localization.mk_cancel (r : R) (s t : S) : Localization.mk (r * t) (s * t) = Localization.mk r s :=by
   rw[Localization.mk_eq_mk_iff, Localization.r_iff_exists]
   use 1
   dsimp
@@ -27,7 +27,7 @@ lemma Localization.mk_canscel (r : R) (s t : S) : Localization.mk (r * t) (s * t
 
 lemma Localization.smul_mk_den_mul (r : R) (s t : S) : t • (Localization.mk r (s * t)) = Localization.mk r s := by
   show (t : R) • (Localization.mk r (s * t)) = Localization.mk r s
-  rw [Localization.smul_mk, smul_eq_mul, mul_comm, Localization.mk_canscel]
+  rw [Localization.smul_mk, smul_eq_mul, mul_comm, Localization.mk_cancel]
 
 lemma wd_for_LiftOnLocalizationModule' (a b : M × S) (h : r S M a b): Localization.mk 1 a.2 • f a.1 = Localization.mk 1 b.2 • f b.1 := by
   rcases h with ⟨u, h⟩
