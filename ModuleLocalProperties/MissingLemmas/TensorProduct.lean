@@ -20,12 +20,12 @@ variable {R : Type*} {M N P : Type*} [CommSemiring R] (S : Submonoid R) [AddComm
 
 noncomputable def BilinearMap : LocalizedModule S M →ₗ[Localization S]
     LocalizedModule S N →ₗ[Localization S] LocalizedModule S P :=
-  LocalizedMapLift S ∘ₗ (map' (M := M) (N := N →ₗ[R] P) S f)
+  LocalizedMapLift S ∘ₗ (mapfromlift (M := M) (N := N →ₗ[R] P) S f)
 
 lemma BilinearMap_mk (m : M) (n : N) (s t : S) :
     BilinearMap S f (mk m s) (mk n t) = mk (f m n) (s * t) :=by
   unfold BilinearMap
-  rw [LinearMap.coe_comp, Function.comp_apply, map'_mk, LocalizedMapLift_mk]
+  rw [LinearMap.coe_comp, Function.comp_apply, mapfromlift_mk, LocalizedMapLift_mk]
 
 end LocalizedModule
 
@@ -89,24 +89,22 @@ lemma InvTensorProductMap_apply' (m : M) (n : N) (s t : S) :
 
 lemma TensorProductMap_rightInv :
     TensorProductMap S ∘ₗ (InvTensorProductMap S (M := M) (N := N)) = LinearMap.id := by
-  unfold TensorProductMap
   ext x
   induction' x with y s
   dsimp
   induction' y with m n m n hm hn
   · simp only [zero_mk, map_zero]
-  · rw [InvTensorProductMap_apply, map_smul, TensorProduct.lift.tmul, TensorProductBilinearMap_mk,
+  · rw [InvTensorProductMap_apply, map_smul, TensorProductMap_mk,
       one_mul, mk_right_smul_mk_den_one]
   · rw [mk_add_mk_right, map_add, map_add, hm, hn]
 
 lemma TensorProductMap_leftInv :
-    InvTensorProductMap S ∘ₗ (TensorProductMap S (M := M) (N := N)) = LinearMap.id :=by
-  unfold TensorProductMap
+    InvTensorProductMap S ∘ₗ (TensorProductMap S (M := M) (N := N)) = LinearMap.id := by
   ext x y
   dsimp
   induction' x with m s
   induction' y with n t
-  rw [TensorProductBilinearMap_mk, InvTensorProductMap_apply']
+  rw [TensorProductMap_mk, InvTensorProductMap_apply']
 
 noncomputable def TensorProductEquiv : (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N)
     ≃ₗ[Localization S] LocalizedModule S (M ⊗[R] N) :=

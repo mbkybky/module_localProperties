@@ -106,14 +106,34 @@ lemma LiftOnLocalizationModule_unique (g : LocalizedModule S M →ₗ[R] N)
 
 end LocalizedModule
 
-section LocalizedModule.map''
+section LocalizedModule.map'
+
+namespace LocalizedModule
+
+variable {R : Type*} [CommSemiring R] (S : Submonoid R) {M N : Type*}
+    [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N]
+
+noncomputable def map' : (M →ₗ[R] N) →ₗ[R] LocalizedModule S M →ₗ[Localization S] LocalizedModule S N where
+  toFun := fun f => LinearMap.extendScalarsOfIsLocalization S _ <| map S f
+  map_add' := by
+    intro f g
+    ext x
+    dsimp
+    rw [map_add, LinearMap.add_apply]
+  map_smul' := by
+    intro r f
+    ext x
+    dsimp
+    rw [map_smul, LinearMap.smul_apply]
+end LocalizedModule
+section LocalizedModule.maplift
 -- This is LocalizedModule.map and LocalizedModule.map' with out using IsLocalizedModule.map
 namespace LocalizedModule
 
 variable {R : Type*} [CommSemiring R] (S : Submonoid R) {M N : Type*}
     [AddCommMonoid M] [Module R M] [AddCommMonoid N] [Module R N]
 
-noncomputable def map'' : (M →ₗ[R] N) →ₗ[R] LocalizedModule S M →ₗ[R] LocalizedModule S N where
+noncomputable def mapfromlift' : (M →ₗ[R] N) →ₗ[R] LocalizedModule S M →ₗ[R] LocalizedModule S N where
   toFun := fun f => LiftOnLocalizationModule' S <| mkLinearMap S N ∘ₗ f
   map_add' := by
     intro f g
@@ -132,14 +152,14 @@ noncomputable def map'' : (M →ₗ[R] N) →ₗ[R] LocalizedModule S M →ₗ[R
       Function.comp_apply, LinearMap.smul_apply, map_smul]
     rw[smul_comm]
 
-lemma map''_mk (f : M →ₗ[R] N) (m : M) (s : S) : map'' S f (mk m s) = mk (f m) s := by
+lemma mapfromlift'_mk (f : M →ₗ[R] N) (m : M) (s : S) : mapfromlift' S f (mk m s) = mk (f m) s := by
   show (LiftOnLocalizationModule' S (mkLinearMap S N ∘ₗ f)) (mk m s) = mk (f m) s
   rw[LiftOnLocalizationModule'_mk, LinearMap.coe_comp, Function.comp_apply,
     mkLinearMap_apply, ← mk_right_smul_mk_den_one (s := s)]
 
-noncomputable def map' :
+noncomputable def mapfromlift :
     (M →ₗ[R] N) →ₗ[R] LocalizedModule S M →ₗ[Localization S] LocalizedModule S N where
-  toFun := fun f => LinearMap.extendScalarsOfIsLocalization S _ <| map'' S f
+  toFun := fun f => LinearMap.extendScalarsOfIsLocalization S _ <| mapfromlift' S f
   map_add' := by
     intro f g
     ext x
@@ -151,8 +171,8 @@ noncomputable def map' :
     dsimp
     rw [map_smul, LinearMap.smul_apply]
 
-lemma map'_mk (f : M →ₗ[R] N) (m : M) (s : S) : map' S f (mk m s) = mk (f m) s :=
-  map''_mk _ _ _ _
+lemma mapfromlift_mk (f : M →ₗ[R] N) (m : M) (s : S) : mapfromlift S f (mk m s) = mk (f m) s :=
+  mapfromlift'_mk _ _ _ _
 
 end LocalizedModule
 
@@ -181,23 +201,23 @@ noncomputable def {R : Type*} [CommSemiring R] (S : Submonoid R) {M N : Type*}
 noncomputable def LocalizedMapLift' : LocalizedModule S (M →ₗ[R] N) →ₗ[R]
     LocalizedModule S M →ₗ[R] LocalizedModule S N := LiftOnLocalizationModule' _ (M := (M →ₗ[R] N))
   (N := LocalizedModule S M →ₗ[R] LocalizedModule S N)
-  <| map'' _
+  <| mapfromlift' _
 
 lemma LocalizedMapLift'_mk (f : M →ₗ[R] N) (m : M) (s t : S) :
     LocalizedMapLift' S (mk f s) (mk m t) = mk (f m) (s * t) := by
   unfold LocalizedMapLift'
-  rw [LiftOnLocalizationModule'_mk, LinearMap.smul_apply, map''_mk, mk_right_smul_mk]
+  rw [LiftOnLocalizationModule'_mk, LinearMap.smul_apply, mapfromlift'_mk, mk_right_smul_mk]
 
 noncomputable def LocalizedMapLift : LocalizedModule S (M →ₗ[R] N) →ₗ[Localization S]
     LocalizedModule S M →ₗ[Localization S] LocalizedModule S N :=
   LiftOnLocalizationModule _ (M := (M →ₗ[R] N))
   (N := LocalizedModule S M →ₗ[Localization S] LocalizedModule S N)
-  <| map' _
+  <| mapfromlift _
 
 lemma LocalizedMapLift_mk (f : M →ₗ[R] N) (m : M) (s t : S) :
     LocalizedMapLift S (mk f s) (mk m t) = mk (f m) (s * t) := by
   unfold LocalizedMapLift
-  rw [LiftOnLocalizationModule_mk, LinearMap.smul_apply, map'_mk, mk_right_smul_mk]
+  rw [LiftOnLocalizationModule_mk, LinearMap.smul_apply, mapfromlift_mk, mk_right_smul_mk]
 
 end LocalizedModule
 
