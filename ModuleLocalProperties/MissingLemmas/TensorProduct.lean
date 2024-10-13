@@ -10,72 +10,115 @@ import ModuleLocalProperties.MissingLemmas.LocalizedModule
 
 open  TensorProduct LocalizedModule
 
-variable {R : Type*} (M N : Type*) [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (S : Submonoid R)
+section BilinearMapLift
 
-noncomputable def Map1 :
-    LocalizedModule S M →ₗ[Localization S] LocalizedModule S (N →ₗ[R] (M ⊗[R] N)) :=
-  LocalizedModule.map' _ <| TensorProduct.mk _ _ _
+namespace LocalizedModule
 
-noncomputable def BiMap : LocalizedModule S M →ₗ[Localization S]
-    LocalizedModule S N →ₗ[Localization S] LocalizedModule S (M ⊗[R] N) where
-  toFun := fun m => LocalizedMapLift _ <| Map1 _ _ _ m
-  map_add' := fun _ _ => by simp only [map_add]
-  map_smul' := fun _ _ => by simp only [map_smul, RingHom.id_apply]
+variable {R : Type*} {M N P : Type*} [CommSemiring R] (S : Submonoid R) [AddCommMonoid M]
+    [Module R M] [AddCommMonoid N] [Module R N] [AddCommMonoid P]
+    [Module R P] (f : M →ₗ[R] N →ₗ[R] P)
 
-noncomputable def Map : (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N)
+noncomputable def BilinearMap : LocalizedModule S M →ₗ[Localization S]
+    LocalizedModule S N →ₗ[Localization S] LocalizedModule S P :=
+  LocalizedMapLift S ∘ₗ (map' (M := M) (N := N →ₗ[R] P) S f)
+
+lemma BilinearMap_mk (m : M) (n : N) (s t : S) :
+    BilinearMap S f (mk m s) (mk n t) = mk (f m n) (s * t) :=by
+  unfold BilinearMap
+  rw [LinearMap.coe_comp, Function.comp_apply, map'_mk, LocalizedMapLift_mk]
+
+end LocalizedModule
+
+section LocalizedModule_TensorProduct_Exchange
+
+namespace LocalizedModule
+
+variable {R : Type*} {M N : Type*} [CommSemiring R] (S : Submonoid R) [AddCommMonoid M] [Module R M] [AddCommMonoid N]
+  [Module R N]
+
+noncomputable def TensorProductBilinearMap : (LocalizedModule S M) →ₗ[Localization S]
+    (LocalizedModule S N) →ₗ[Localization S] LocalizedModule S (M ⊗[R] N) :=
+  BilinearMap S <| TensorProduct.mk R M N
+
+lemma TensorProductBilinearMap_mk (m : M) (n : N) (s t : S) :
+    TensorProductBilinearMap S (mk m s) (mk n t) = mk (m ⊗ₜ n) (s * t) :=
+  BilinearMap_mk S (TensorProduct.mk R M N) m n s t
+
+noncomputable def TensorProductMap : (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N)
     →ₗ[Localization S] LocalizedModule S (M ⊗[R] N) :=
-  TensorProduct.lift <| BiMap _ _ _
+  TensorProduct.lift <| TensorProductBilinearMap S
 
-noncomputable def InvBiMap : M →ₗ[R] N →ₗ[R]
+lemma TensorProductMap_mk (m : M) (n : N) (s t : S) :
+    TensorProductMap S ((mk m s) ⊗ₜ (mk n t)) = mk (m ⊗ₜ n) (s * t) :=
+  TensorProductBilinearMap_mk S m n s t
+
+noncomputable def InvTensorProductBilinearMap : M →ₗ[R] N →ₗ[R]
     (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) :=
-  LinearMap.mk₂ _ (fun m n => mkLinearMap _ _ m ⊗ₜ mkLinearMap _ _ n)
+  LinearMap.mk₂ _ (fun m n => mkLinearMap S M m ⊗ₜ mkLinearMap S N n)
   fun _ _ _ => by simp only [map_add, add_tmul]
   fun _ _ _ => by simp only [map_smul, smul_tmul']
   fun _ _ _ => by simp only [map_add, tmul_add]
   fun _ _ _ => by simp only [map_smul, tmul_smul]
 
-noncomputable def InvMapbeforeLocalized : M ⊗[R] N →ₗ[R]
+lemma InvTensorProductBilinearMap_apply (m : M) (n : N) :
+    InvTensorProductBilinearMap S m n = ((mk m 1) ⊗ₜ (mk n 1)) := rfl
+
+noncomputable def InvTensorProductMap' : M ⊗[R] N →ₗ[R]
     LocalizedModule S M ⊗[Localization S] LocalizedModule S N :=
-  TensorProduct.lift <| InvBiMap _ _ _
+  TensorProduct.lift <| InvTensorProductBilinearMap S
 
-noncomputable def InvMap : LocalizedModule S (M ⊗[R] N) →ₗ[Localization S]
+lemma InvTensorProductMap'_apply (m : M) (n : N) :
+    InvTensorProductMap' S (m ⊗ₜ n) = ((mk m 1) ⊗ₜ (mk n 1)) :=
+  InvTensorProductBilinearMap_apply S m n
+
+noncomputable def InvTensorProductMap : LocalizedModule S (M ⊗[R] N) →ₗ[Localization S]
     (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N) :=
-  LiftOnLocalization _ <| InvMapbeforeLocalized _ _ _
+  LiftOnLocalizationModule _ <| InvTensorProductMap' S
 
-#check LocalizedModule.lift
-#check LocalizedModule.lift_mk
-#check LocalizedModule.lift_comp
-#check LocalizedModule.lift_unique
-#check TensorProduct.lift
-#check TensorProduct.lift.tmul
-#check TensorProduct.lift_compr₂
+lemma InvTensorProductMap_apply (m : M) (n : N) (s : S) :
+    InvTensorProductMap S (mk (m ⊗ₜ n) s) = Localization.mk 1 s • ((mk m 1) ⊗ₜ (mk n 1)) := by
+  unfold InvTensorProductMap
+  rw [LiftOnLocalizationModule_mk, InvTensorProductMap'_apply]
 
-noncomputable def Eqv : (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N)
-    ≃ₗ[Localization S] LocalizedModule S (M ⊗[R] N) := by
-  refine LinearEquiv.ofLinear (Map _ _ _) (InvMap _ _ _) ?_ ?_
-  · ext x
+lemma InvTensorProductMap_apply' (m : M) (n : N) (s t : S) :
+    InvTensorProductMap S (mk (m ⊗ₜ n) (s * t)) = ((mk m s) ⊗ₜ (mk n t)) := by
+  rw [InvTensorProductMap_apply]
+  symm
+  rw [← mk_right_smul_mk_den_one, ← mk_right_smul_mk_den_one (s := t), TensorProduct.smul_tmul_smul,
+    Localization.mk_mul, one_mul]
 
-    unfold InvMap LiftOnLocalization LiftOnLocalization' LocalizedModule.lift
-    dsimp
-    show (Map M N S) (lift' S (InvMapbeforeLocalized M N S) _ x) = x
-    unfold InvMapbeforeLocalized InvBiMap
+lemma TensorProductMap_rightInv :
+    TensorProductMap S ∘ₗ (InvTensorProductMap S (M := M) (N := N)) = LinearMap.id := by
+  unfold TensorProductMap
+  ext x
+  induction' x with y s
+  dsimp
+  induction' y with m n m n hm hn
+  · simp only [zero_mk, map_zero]
+  · rw [InvTensorProductMap_apply, map_smul, TensorProduct.lift.tmul, TensorProductBilinearMap_mk,
+      one_mul, mk_right_smul_mk_den_one]
+  · rw [mk_add_mk_right, map_add, map_add, hm, hn]
 
-    dsimp
-    unfold TensorProduct.lift liftAux lift'
-    dsimp
+lemma TensorProductMap_leftInv :
+    InvTensorProductMap S ∘ₗ (TensorProductMap S (M := M) (N := N)) = LinearMap.id :=by
+  unfold TensorProductMap
+  ext x y
+  dsimp
+  induction' x with m s
+  induction' y with n t
+  rw [TensorProductBilinearMap_mk, InvTensorProductMap_apply']
 
-    sorry
-  · unfold Map
-    rw [← TensorProduct.lift_compr₂]
-    suffices (BiMap M N S).compr₂ (InvMap M N S) = mk _ _ _ from by rw [this, TensorProduct.lift_mk]
-    ext m n
-    simp
-    unfold InvMap LiftOnLocalization
-    simp
-    unfold LiftOnLocalization'
-    dsimp
-    --have :=
-    rw[LocalizedModule.lift_unique S _ _ _ _]
-    sorry
-    sorry
-    sorry
+noncomputable def TensorProductEquiv : (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N)
+    ≃ₗ[Localization S] LocalizedModule S (M ⊗[R] N) :=
+  LinearEquiv.ofLinear (TensorProductMap S) (InvTensorProductMap S) (TensorProductMap_rightInv S)
+  (TensorProductMap_leftInv S)
+
+lemma TensorProductEquiv_apply (m : M) (n : N) (s t : S) :
+    TensorProductEquiv S ((mk m s) ⊗ₜ (mk n t)) = mk (m ⊗ₜ n) (s * t) :=
+  TensorProductMap_mk S m n s t
+
+lemma TensorProductEquiv_symm_apply (m : M) (n : N) (s : S) :
+    (TensorProductEquiv S).symm (mk (m ⊗ₜ n) s) = Localization.mk 1 s • ((mk m 1) ⊗ₜ (mk n 1)) :=
+  InvTensorProductMap_apply S m n s
+
+end LocalizedModule
