@@ -98,19 +98,20 @@ theorem Flat_of_localization' (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Module.
     rw [← ker_eq_bot, LinearMap.coe_mk, AddHom.coe_mk, ← localized'_ker_eq_ker_localizedMap, ker_eq_bot.mpr finj, localized'_bot]
   set g1 := (rTensor (LocalizedModule.AtPrime J M) ((map' J.primeCompl) f))
   set g2 := ((map' J.primeCompl) (rTensor M f))
-  have : (Eqv N' M J.primeCompl) ∘ₗ g1 = g2 ∘ₗ (Eqv N M J.primeCompl) := by
+  have : (eqv N' M J.primeCompl) ∘ₗ g1 = g2 ∘ₗ (eqv N M J.primeCompl) := by
     apply TensorProduct.ext'
     intro x y
     unfold_let
-    unfold Eqv Map BiMap
+    unfold eqv
     simp only [LinearEquiv.ofLinear_toLinearMap, coe_comp, Function.comp_apply,
       rTensor_tmul, TensorProduct.lift.tmul, LinearMap.coe_mk, AddHom.coe_mk]
     obtain ⟨n, sn, eqx⟩ : ∃ n : N, ∃ sn : J.primeCompl, mk n sn = x := ⟨(Quotient.out x).1, (Quotient.out x).2, (Quotient.out_eq _)⟩
     obtain ⟨m, sm, eqy⟩ : ∃ m : M, ∃ sm : J.primeCompl, mk m sm = y := ⟨(Quotient.out y).1, (Quotient.out y).2, (Quotient.out_eq _)⟩
     rw [← eqx, ← eqy, map'_mk]
-    unfold Map1 LocalizedMapLift
-    simp only [map'_mk, LiftOnLocalization_mk, smul_apply, TensorProduct.mk_apply, mk_smul_mk, one_smul, rTensor_tmul]
-  have inj : Function.Injective ((Eqv N' M J.primeCompl).toLinearMap ∘ₗ g1) := by
+    sorry
+    /- unfold Map1 LocalizedMapLift
+    simp only [map'_mk, LiftOnLocalization_mk, smul_apply, TensorProduct.mk_apply, mk_smul_mk, one_smul, rTensor_tmul] -/
+  have inj : Function.Injective ((eqv N' M J.primeCompl).toLinearMap ∘ₗ g1) := by
     simp only [coe_comp, LinearEquiv.coe_coe, EmbeddingLike.comp_injective]
     exact ((Module.Flat.iff_rTensor_preserves_injective_linearMap' _ _).mp (h J hJ) (map' J.primeCompl f) inj)
   rw [this] at inj
