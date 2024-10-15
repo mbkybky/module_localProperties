@@ -289,6 +289,8 @@ lemma LocalizedMapLift_mk (f : M →ₗ[R] N) (m : M) (s t : S) :
 
 end LocalizedMapLift
 
+--to make a algebraequiv between Localzation S and LocalzedModule S R
+
 section Localization_is_LocalizedModule
 
 namespace Localization
@@ -384,6 +386,9 @@ lemma Map_inj : Function.Injective (Map S) := by
 noncomputable def Equiv : Localization S ≃ₐ[R] LocalizedModule S R :=
   AlgEquiv.ofBijective (Map S) ⟨Map_inj _,Map_surj _⟩
 
-lemma Equiv_mk (r : R) (s : S) : Map S (Localization.mk r s) = mk r s := rfl
+lemma Equiv_mk (r : R) (s : S) : Equiv S (Localization.mk r s) = mk r s := rfl
+
+lemma Equiv_symm_mk (r : R) (s : S) : (Equiv S).symm (mk r s) = Localization.mk r s :=
+  (AlgEquiv.symm_apply_eq (Equiv S)).mpr rfl
 
 end Localization

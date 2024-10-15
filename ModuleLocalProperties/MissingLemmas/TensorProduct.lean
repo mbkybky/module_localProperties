@@ -4,8 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Song Yi
 -/
 import Mathlib.Algebra.Module.LocalizedModule
-import Mathlib.RingTheory.Flat.Basic
-import Mathlib.RingTheory.IsTensorProduct
+
 import ModuleLocalProperties.MissingLemmas.LocalizedModule
 
 open  TensorProduct LocalizedModule
@@ -33,8 +32,8 @@ section LocalizedModule_TensorProduct_Exchange
 
 namespace LocalizedModule
 
-variable {R : Type*} [CommSemiring R] (S : Submonoid R) (M N : Type*) [AddCommMonoid M] [Module R M] [AddCommMonoid N]
-  [Module R N]
+variable {R : Type*} [CommSemiring R] (S : Submonoid R) (M N : Type*) [AddCommMonoid M] [Module R M]
+    [AddCommMonoid N] [Module R N]
 
 noncomputable def TensorProductBilinearMap : (LocalizedModule S M) →ₗ[Localization S]
     (LocalizedModule S N) →ₗ[Localization S] LocalizedModule S (M ⊗[R] N) :=
@@ -84,7 +83,7 @@ lemma InvTensorProductMap_apply' (m : M) (n : N) (s t : S) :
     InvTensorProductMap S M N (mk (m ⊗ₜ n) (s * t)) = ((mk m s) ⊗ₜ (mk n t)) := by
   rw [InvTensorProductMap_apply]
   symm
-  rw [← mk_right_smul_mk_den_one, ← mk_right_smul_mk_den_one (s := t), TensorProduct.smul_tmul_smul,
+  rw [← mk_right_smul_mk_left, ← mk_right_smul_mk_left (s := t), TensorProduct.smul_tmul_smul,
     Localization.mk_mul, one_mul]
 
 lemma TensorProductMap_rightInv :
@@ -93,18 +92,22 @@ lemma TensorProductMap_rightInv :
   induction' x with y s
   dsimp
   induction' y with m n m n hm hn
-  · simp only [zero_mk, map_zero]
+  · rw [zero_mk, map_zero, map_zero]
   · rw [InvTensorProductMap_apply, map_smul, TensorProductMap_mk,
-      one_mul, mk_right_smul_mk_den_one]
+      one_mul, mk_right_smul_mk_left]
   · rw [mk_add_mk_right, map_add, map_add, hm, hn]
 
 lemma TensorProductMap_leftInv :
     InvTensorProductMap S M N ∘ₗ (TensorProductMap S M N) = LinearMap.id := by
-  ext x y
-  dsimp
-  induction' x with m s
-  induction' y with n t
-  rw [TensorProductMap_mk, InvTensorProductMap_apply']
+  ext u
+  induction' u with x y a b ha hb
+  · rw [map_zero, map_zero]
+  · dsimp
+    induction' x with m s
+    induction' y with n t
+    rw [TensorProductMap_mk, InvTensorProductMap_apply']
+  · rw [LinearMap.id_coe, id_eq, map_add] at *
+    rw[ha, hb]
 
 noncomputable def TensorProductEquiv : (LocalizedModule S M) ⊗[Localization S] (LocalizedModule S N)
     ≃ₗ[Localization S] LocalizedModule S (M ⊗[R] N) :=
