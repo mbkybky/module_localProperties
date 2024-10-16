@@ -7,17 +7,12 @@ import Mathlib.RingTheory.Flat.Basic
 import Mathlib.Algebra.Module.Submodule.Localization
 import Mathlib.RingTheory.Localization.BaseChange
 
-import ModuleLocalProperties.MissingLemmas.LocalizedModule
 import ModuleLocalProperties.MissingLemmas.Submodule
 import ModuleLocalProperties.MissingLemmas.FlatIff
-import ModuleLocalProperties.MissingLemmas.TensorProduct
 import ModuleLocalProperties.Basic
+import ModuleLocalProperties.Isom
 
 open Submodule IsLocalizedModule LocalizedModule Ideal IsLocalization LinearMap
-
-lemma inj_of_local {R M N : Type*} [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (f : M →ₗ[R] N) (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Function.Injective (map' J.primeCompl f)) : Function.Injective f := by
-  simp only [← ker_eq_bot] at h ⊢
-  exact submodule_eq_bot_of_localization _ fun J hJ ↦ (localized'_ker_eq_ker_localizedMap _ _ _ _ f).trans (h J hJ)
 
 section Tensor
 open TensorProduct IsBaseChange LinearEquiv
@@ -59,7 +54,7 @@ theorem Flat_of_localization (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Module.F
     (LocalizedModule.AtPrime J M)) : Module.Flat R M := by
   apply (Module.Flat.iff_rTensor_preserves_injective_linearMap' R M).mpr
   intro N N' _ _ _ _ f finj
-  apply inj_of_local
+  apply injective_of_localization
   intro J hJ
   have inj : Function.Injective (map' J.primeCompl f) := by
     unfold map' LocalizedModule.map
@@ -91,7 +86,7 @@ theorem Flat_of_localization' (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Module.
     (LocalizedModule.AtPrime J M)) : Module.Flat R M := by
   apply (Module.Flat.iff_rTensor_preserves_injective_linearMap' R M).mpr
   intro N N' _ _ _ _ f finj
-  apply inj_of_local
+  apply injective_of_localization
   intro J hJ
   have inj : Function.Injective (map' J.primeCompl f) := by
     unfold map' LocalizedModule.map

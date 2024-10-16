@@ -37,6 +37,26 @@ noncomputable def LocalizedModule.map {R : Type*} [CommSemiring R] (S : Submonoi
     (M →ₗ[R] M') →ₗ[R] (LocalizedModule S M) →ₗ[R] (LocalizedModule S M') :=
   IsLocalizedModule.map S (mkLinearMap S M) (mkLinearMap S M')
 
+section LocalizedModule.map'
+
+variable {R : Type*} [CommSemiring R] (S : Submonoid R) {M N : Type*}
+    [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N]
+
+noncomputable def map' : (M →ₗ[R] N) →ₗ[R] LocalizedModule S M →ₗ[Localization S] LocalizedModule S N where
+  toFun := fun f => LinearMap.extendScalarsOfIsLocalization S _ <| LocalizedModule.map S f
+  map_add' := by
+    intro f g
+    ext x
+    dsimp
+    rw [map_add, LinearMap.add_apply]
+  map_smul' := by
+    intro r f
+    ext x
+    dsimp
+    rw [map_smul, LinearMap.smul_apply]
+
+end LocalizedModule.map'
+
 section Properties
 
 section IsLocalizedModule
