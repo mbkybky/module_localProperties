@@ -6,7 +6,7 @@ Authors: Yi Song, Yongle Hu
 
 import ModuleLocalProperties.Basic
 
-open Submodule IsLocalizedModule LocalizedModule Ideal
+open Submodule LocalizedModule Ideal LinearMap
 
 variable {R M M' : Type*} [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup M'] [Module R M']
 (s : Finset R) (spn : span (s : Set R) = ⊤) (f : M →ₗ[R] M')
@@ -14,19 +14,15 @@ include spn
 
 lemma injective_of_localization_finitespan (h : ∀ r : s, Function.Injective
     (map' (Submonoid.powers r.1) f)) :
-    Function.Injective f := by
-  simp only [← LinearMap.ker_eq_bot] at h ⊢
-  apply submodule_eq_bot_of_localization_finitespan _ _ spn
-  intro a
-  exact (LinearMap.localized'_ker_eq_ker_localizedMap _ _ _ _ f).trans (h a)
+    Function.Injective f :=
+  ker_eq_bot.mp <| submodule_eq_bot_of_localization_finitespan _ _ spn <|
+  fun r ↦ (localized'_ker_eq_ker_localizedMap _ _ _ _ f).trans <| ker_eq_bot.mpr <| h r
 
 lemma surjective_of_localization_finitespan (h : ∀ r : s, Function.Surjective
     (map' (Submonoid.powers r.1) f)) :
-    Function.Surjective f := by
-  simp only [← LinearMap.range_eq_top] at h ⊢
-  apply submodule_eq_top_of_localization_finitespan _ _ spn
-  intro a
-  exact (LinearMap.localized'_range_eq_range_localizedMap _ _ _ f).trans (h a)
+    Function.Surjective f :=
+  range_eq_top.mp <| submodule_eq_top_of_localization_finitespan _ _ spn <|
+  fun r ↦ (localized'_range_eq_range_localizedMap _ _ _ f).trans <| range_eq_top.mpr <| h r
 
 lemma bijective_of_localization_finitespan (h : ∀ r : s, Function.Bijective
     (map' (Submonoid.powers r.1) f)) :
@@ -37,3 +33,7 @@ lemma bijective_of_localization_finitespan (h : ∀ r : s, Function.Bijective
 noncomputable def linearEquivOfLocalizationFinitespan (h : ∀ r : s, Function.Bijective
     (map' (Submonoid.powers r.1) f)) : M ≃ₗ[R] M' :=
   LinearEquiv.ofBijective f <| bijective_of_localization_finitespan _ spn _ h
+
+lemma linearEquivOfLocalizationFinitespan_apply (h : ∀ r : s, Function.Bijective
+    (map' (Submonoid.powers r.1) f)) (m : M) :
+    linearEquivOfLocalizationFinitespan s spn f h m = f m := rfl
