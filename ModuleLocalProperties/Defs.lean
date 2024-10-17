@@ -6,6 +6,7 @@ Authors: Yongle Hu
 import Mathlib.RingTheory.Localization.AtPrime
 import Mathlib.RingTheory.Localization.Module
 import Mathlib.Algebra.Category.ModuleCat.Basic
+import Mathlib.RingTheory.Flat.Basic
 
 /-!
 # Local properties of modules
@@ -61,7 +62,7 @@ section Properties
 
 section IsLocalizedModule
 
-variable (P : ∀ (R : Type u) [CommRing R] (M : Type v) [AddCommGroup M] [Module R M], Prop)
+variable (P : ∀ (R : Type u) (M : Type v) [CommRing R] [AddCommGroup M] [Module R M], Prop)
 
 /-- A property `P` of `R`-modules is said to be preserved by localization
   if `P` holds for `p⁻¹M` whenever `P` holds for `M`. -/
@@ -75,7 +76,7 @@ end IsLocalizedModule
 
 section LocalizedModule
 
-variable (P : ∀ (R : Type u) [CommRing R] (M : Type max u v) [AddCommGroup M] [Module R M], Prop)
+variable (P : ∀ (R : Type u) (M : Type max u v) [CommRing R] [AddCommGroup M] [Module R M], Prop)
 
 /-- A property `P` of `R`-modules is said to be preserved by localization
   if `P` holds for `p⁻¹M` whenever `P` holds for `M`. -/
@@ -86,7 +87,7 @@ def LocalizedModulePreserves : Prop :=
 /-- A property `P` of `R`-modules satisfies `OfLocalizedModuleMaximal`
   if `P` holds for `M` whenever `P` holds for `Mₘ` for all maximal ideal `m`. -/
 def OfLocalizedModuleMaximal : Prop :=
-  ∀ {R : Type u} [CommRing R] (M : Type v) [AddCommGroup M] [Module R M],
+  ∀ {R : Type u} (M : Type v) [CommRing R] [AddCommGroup M] [Module R M],
     (∀ (J : Ideal R) (_ : J.IsMaximal), P (Localization.AtPrime J) (LocalizedModule.AtPrime J M)) →
     P R (ULift.{u} M)
 
@@ -113,7 +114,7 @@ def OfLocalizedModuleSpan :=
     (_ : ∀ r : s, P (Localization.Away r.1) (LocalizedModule.Away r.1 M)), P R (ULift.{u} M)
 
 theorem ofLocalizedModuleSpan_iff_finite :
-    OfLocalizedModuleSpan @P ↔ OfLocalizedModuleFiniteSpan @P := by
+    OfLocalizedModuleSpan P ↔ OfLocalizedModuleFiniteSpan P := by
   apply forall₅_congr
   intros
   constructor
@@ -161,5 +162,51 @@ def LinearMap.OfLocalizedModuleSpan :=
     (_ : ∀ r : s, P (Localization.awayMap f r)), P f
  -/
 end LinearMap
+
+section LocalizedModule'
+
+variable (P : ∀ (R : Type u) (M : Type max u v) [CommRing R] [AddCommGroup M] [Module R M], Prop)
+  (Q : ∀ (R : Type u) (M : Type v) [CommRing R] [AddCommGroup M] [Module R M], Prop)
+
+/-- A property `P` of `R`-modules satisfies `OfLocalizedModuleMaximal`
+  if `P` holds for `M` whenever `P` holds for `Mₘ` for all maximal ideal `m`. -/
+def OfLocalizedModuleMaximal' : Prop :=
+  ∀ {R : Type u} [CommRing R] (M : Type v) [AddCommGroup M] [Module R M],
+    (∀ (J : Ideal R) (_ : J.IsMaximal), P (Localization.AtPrime J) (LocalizedModule.AtPrime J M)) →
+    Q R M
+
+/-- A property `P` of `R`-modules satisfies `OfLocalizedModuleFiniteSpan`
+  if `P` holds for `M` whenever there exists a finite set `{ r }` that spans `R` such that
+  `P` holds for `Mᵣ`.
+
+  Note that this is equivalent to `OfLocalizedModuleSpan` via
+  `ofLocalizedModuleSpan_iff_finite`, but this is easier to prove. -/
+def OfLocalizedModuleFiniteSpan' :=
+  ∀ {R : Type u} [CommRing R] (M : Type v) [AddCommGroup M] [Module R M] (s : Finset R)
+    (_ : Ideal.span (s : Set R) = ⊤)
+    (_ : ∀ r : s, P (Localization.Away r.1) (LocalizedModule.Away r.1 M)), Q R M
+
+/-- A property `P` of `R`-modules satisfies `OfLocalizedModuleSpan`
+  if `P` holds for `M` whenever there exists a set `{ r }` that spans `R` such that
+  `P` holds for `Mᵣ`.
+
+  Note that this is equivalent to `OfLocalizedModuleFiniteSpan` via
+  `ofLocalizedModuleSpan_iff_finite`, but this is easier to prove. -/
+def OfLocalizedModuleSpan' :=
+  ∀ {R : Type u} [CommRing R] (M : Type v) [AddCommGroup M] [Module R M] (s : Set R)
+    (_ : Ideal.span s = ⊤)
+    (_ : ∀ r : s, P (Localization.Away r.1) (LocalizedModule.Away r.1 M)), Q R M
+
+theorem ofLocalizedModuleSpan_iff_finite' :
+    OfLocalizedModuleSpan' P Q ↔ OfLocalizedModuleFiniteSpan' P Q := by
+  apply forall₅_congr
+  intros
+  constructor
+  · intro h s; exact h s
+  · intro h s hs hs'
+    obtain ⟨s', h₁, h₂⟩ := (Ideal.span_eq_top_iff_finite s).mp hs
+    exact h s' h₂ fun x => hs' ⟨_, h₁ x.prop⟩
+
+end LocalizedModule'
 
 end Properties
