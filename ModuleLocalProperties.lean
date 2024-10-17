@@ -2,10 +2,12 @@ import ModuleLocalProperties.Basic
 import ModuleLocalProperties.Defs
 import ModuleLocalProperties.FinitePresentation
 import ModuleLocalProperties.Flat
+import ModuleLocalProperties.Isom
 import ModuleLocalProperties.MissingLemmas.FlatIff
 import ModuleLocalProperties.MissingLemmas.LocalizaedIsTensorProduct
 import ModuleLocalProperties.MissingLemmas.LocalizedModule
 import ModuleLocalProperties.MissingLemmas.Range
 import ModuleLocalProperties.MissingLemmas.Submodule
 import ModuleLocalProperties.MissingLemmas.TensorProduct
+import ModuleLocalProperties.MissingLemmas.Units
 import ModuleLocalProperties.SpanIsom

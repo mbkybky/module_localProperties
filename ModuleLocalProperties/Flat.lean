@@ -57,7 +57,7 @@ variable {R : Type*} (M N : Type*) [CommRing R] (S : Submonoid R) [AddCommGroup 
 
 theorem Flat_of_localization (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Module.Flat (Localization.AtPrime J)
     (LocalizedModule.AtPrime J M)) : Module.Flat R M := by
-  apply (Module.Flat.iff_rTensor_preserves_injective_linearMap' R M).mpr
+  apply (Module.Flat.iff_rTensor_preserves_injective_linearMap R M).mpr
   intro N N' _ _ _ _ f finj
   apply injective_of_localization
   intro J hJ
@@ -87,7 +87,7 @@ variable (s : Finset R) (spn : span (s : Set R) = ⊤)
 include spn
 
 theorem Flat_of_localization_finitespan  (h : ∀ r : s, Module.Flat (Localization (Submonoid.powers r.1)) (LocalizedModule (Submonoid.powers r.1) M)) : Module.Flat R M := by
-  apply (Module.Flat.iff_rTensor_preserves_injective_linearMap' R M).mpr
+  apply (Module.Flat.iff_rTensor_preserves_injective_linearMap R M).mpr
   intro N N' _ _ _ _ f finj
   apply injective_of_localization_finitespan s spn
   intro r
@@ -117,7 +117,7 @@ end flatlocal
 variable (R R' : Type*) [CommRing R] [CommRing R'] [Algebra R R'] (S : Submonoid R) [IsLocalization S R']
 include S
 instance : Module.Flat R (Localization S) := by
-  apply (Module.Flat.iff_lTensor_preserves_injective_linearMap' R _).mpr
+  apply (Module.Flat.iff_lTensor_preserves_injective_linearMap R _).mpr
   intro N N' _ _ _ _ f finj
   set g1 := ((tensor_eqv_local N' S).restrictScalars R).toLinearMap ∘ₗ (LinearMap.lTensor (Localization S) f)
   set g2 := (map' S f).restrictScalars R ∘ₗ ((tensor_eqv_local N S).restrictScalars R).toLinearMap

@@ -17,7 +17,7 @@ namespace LocalizedModule
 
 section mk_eq_lemma
 
-variable {R : Type*} [CommSemiring R] (S : Submonoid R) {M : Type*} [AddCommMonoid M] [Module R M]
+variable {R : Type*} [CommSemiring R] {S : Submonoid R} {M : Type*} [AddCommMonoid M] [Module R M]
 
 lemma Localization.mk_cancel (r : R) (s t : S) : Localization.mk (r * t) (s * t) = Localization.mk r s :=by
   rw[Localization.mk_eq_mk_iff, Localization.r_iff_exists]
@@ -91,7 +91,7 @@ def LiftOnLocalizationModule' : LocalizedModule S M →ₗ[R] N where
     rw [mk_add_mk, liftOn_mk, liftOn_mk, liftOn_mk, f.map_add]
     symm
     rw [← Localization.smul_mk_right_mul (t := t), smul_assoc, smul_comm, ← LinearMap.CompatibleSMul.map_smul]
-    rw [← Localization.smul_mk_right_mul 1 t (t := s), smul_assoc, smul_comm,
+    rw [← Localization.smul_mk_right_mul 1 t s, smul_assoc, smul_comm,
       ← LinearMap.CompatibleSMul.map_smul f s, mul_comm, smul_add]
   map_smul' := by
     dsimp

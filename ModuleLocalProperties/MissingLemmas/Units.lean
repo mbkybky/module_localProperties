@@ -3,8 +3,8 @@ Copyright (c) 2024 Yi Song. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yi Song
 -/
-
-import Mathlib.Algebra.Group.Units
+import Mathlib.Algebra.Group.Basic
+import Mathlib.Algebra.Group.Units.Defs
 
 open IsUnit
 

@@ -99,7 +99,7 @@ lemma TensorProductMap_rightInv :
 
 lemma TensorProductMap_leftInv :
     InvTensorProductMap S M N ∘ₗ (TensorProductMap S M N) = LinearMap.id := by
-  ext u
+  refine LinearMap.ext (fun u => ?_)
   induction' u with x y a b ha hb
   · rw [map_zero, map_zero]
   · dsimp
