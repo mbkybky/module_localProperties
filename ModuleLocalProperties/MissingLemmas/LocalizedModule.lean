@@ -9,7 +9,7 @@ import ModuleLocalProperties.Defs
 
 import ModuleLocalProperties.MissingLemmas.Units --unsed for lift.LiftOnLocalization'
 
-open Submodule TensorProduct LocalizedModule
+open LocalizedModule
 
 namespace LocalizedModule
 
