@@ -3,13 +3,14 @@ Copyright (c) 2024 Yi Song. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yi Song
 -/
-import Mathlib.Algebra.Module.Submodule.Localization
-import Mathlib.Algebra.Module.Torsion
+
 import ModuleLocalProperties.Basic
 
 import ModuleLocalProperties.MissingLemmas.LocalizedModule
 
 open Submodule LocalizedModule IsLocalizedModule LinearMap nonZeroDivisors
+
+set_option linter.unusedVariables false
 
 section missinglemma
 
@@ -28,25 +29,6 @@ lemma Localization.mk_mem_nonZeroDivisors {R : Type*} [CommRing R] (S : Submonoi
     (nontrival : 0 ∉ S) (r : R) (s : S) (h : mk r s ∈ (Localization S)⁰) : r ≠ 0 := by
   haveI := OreLocalization.nontrivial_iff.mpr nontrival
   exact IsLocalization.ne_zero_of_mk'_ne_zero <| mk_eq_mk' (R := R) ▸ nonZeroDivisors.ne_zero h
-
-lemma zero_mem_nonZeroDivisors {M : Type u_1} [MonoidWithZero M] [Subsingleton M] : 0 ∈ M⁰ :=
-  mem_nonZeroDivisors_iff.mp fun _ _ ↦ Subsingleton.eq_zero _
-
-lemma Submodule.torsion_of_subsingleton {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M]
-    (h : Subsingleton R) : torsion R M = ⊤ :=
-  eq_top_iff'.mpr <| fun x ↦ (mem_torsion_iff x).mp
-  ⟨⟨0, zero_mem_nonZeroDivisors⟩, by rw [Submonoid.mk_smul, zero_smul]⟩
-
-lemma Submodule.loclized_of_trivial {R M : Type*} [CommRing R] (S : Submonoid R) [AddCommGroup M]
-    [Module R M] {p : Submodule R M} (trivial : 0 ∈ S) : localized S p = ⊤ := by
-  apply eq_top_iff'.mpr
-  intro x
-  rw [mem_localized']
-  induction' x with m s
-  refine ⟨0, ⟨Submodule.zero_mem p, ⟨⟨0, trivial⟩, ?_⟩⟩⟩
-  rw [← mk_eq_mk',mk_eq]
-  use ⟨0, trivial⟩
-  simp only [smul_zero, Submonoid.mk_smul, zero_smul]
 
 end missinglemma
 
@@ -94,7 +76,7 @@ lemma localized_torsion_nontrival_ge [IsDomain R] (nontrivial : 0 ∉ S) :
 lemma localized_torsion_trival [IsDomain R] (trivial : 0 ∈ S) :
     localized S (torsion R M) = torsion (Localization S) (LocalizedModule S M) :=
   (torsion_of_subsingleton (M := LocalizedModule S M) <|
-  OreLocalization.subsingleton_iff.mpr trivial) ▸ loclized_of_trivial S trivial
+  OreLocalization.subsingleton_iff.mpr trivial) ▸ localized_of_trivial S trivial
 
 lemma localized_torsion [IsDomain R] :
     localized S (torsion R M) = torsion (Localization S) (LocalizedModule S M) := by
@@ -124,3 +106,7 @@ lemma noZeroSMulDivisors_of_localization_iff :
   fun h ↦ noZeroSMulDivisors_of_localization M h⟩
 
 end NoZeroSMulDivisors_local_property
+
+section annihilator
+
+end annihilator
