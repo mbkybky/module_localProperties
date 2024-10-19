@@ -11,12 +11,6 @@ import ModuleLocalProperties.MissingLemmas.LocalizedModule
 
 open Submodule LocalizedModule IsLocalizedModule LinearMap nonZeroDivisors
 
-#check IsLocalization.map_comap
-#check Module.annihilator
-#check NoZeroSMulDivisors
-#check IsLocalization.map_nonZeroDivisors_le
-#check IsDomain
-
 section missinglemma
 
 lemma IsLocalization.mem_map_nonZeroDivisors {R : Type*} [CommSemiring R] (S : Submonoid R)
@@ -111,3 +105,22 @@ lemma localized_torsion [IsDomain R] :
     exact localized_torsion_nontrival_ge _ _ trivial
 
 end localized_torsion_commutivity
+
+section NoZeroSMulDivisors_local_property
+
+variable {R : Type*} [CommRing R] [IsDomain R] (M : Type*) [AddCommGroup M] [Module R M]
+
+lemma noZeroSMulDivisors_of_localization (h : ∀ (J : Ideal R) (hJ : J.IsMaximal),
+    NoZeroSMulDivisors (Localization J.primeCompl) (LocalizedModule J.primeCompl M)) :
+    NoZeroSMulDivisors R M :=
+  noZeroSMulDivisors_iff_torsion_eq_bot.mpr <| submodule_eq_bot_of_localization _ <| fun J hJ ↦
+  localized_torsion J.primeCompl M ▸ noZeroSMulDivisors_iff_torsion_eq_bot.mp <| h J hJ
+
+lemma noZeroSMulDivisors_of_localization_iff :
+    NoZeroSMulDivisors R M ↔ ∀ (J : Ideal R) (hJ : J.IsMaximal),
+    NoZeroSMulDivisors (Localization J.primeCompl) (LocalizedModule J.primeCompl M) :=
+  ⟨fun h J _ ↦ (noZeroSMulDivisors_iff_torsion_eq_bot.mp h) ▸ localized_torsion J.primeCompl M ▸
+    noZeroSMulDivisors_iff_torsion_eq_bot.mpr <| localized_bot _ ,
+  fun h ↦ noZeroSMulDivisors_of_localization M h⟩
+
+end NoZeroSMulDivisors_local_property
