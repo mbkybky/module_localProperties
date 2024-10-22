@@ -3,7 +3,7 @@ Copyright (c) 2024 Yi Song. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yi Song
 -/
-
+import Mathlib.Algebra.Module.Torsion
 import ModuleLocalProperties.Basic
 
 import ModuleLocalProperties.MissingLemmas.LocalizedModule
@@ -32,9 +32,16 @@ lemma Localization.mk_mem_nonZeroDivisors {R : Type*} [CommRing R] (S : Submonoi
 
 end missinglemma
 
+namespace Submodule
+
 section localized_torsion_commutivity
 
 variable {R : Type*} [CommRing R] (S : Submonoid R) (M : Type*) [AddCommGroup M] [Module R M]
+
+lemma torsion_of_subsingleton {R M : Type*} [CommSemiring R] [AddCommMonoid M] [Module R M]
+    (h : Subsingleton R) : torsion R M = ⊤ :=
+  eq_top_iff'.mpr <| fun x ↦ (mem_torsion_iff x).mp
+  ⟨⟨0, zero_mem_nonZeroDivisors⟩, by rw [Submonoid.mk_smul, zero_smul]⟩
 
 lemma localized_torsion_le :
     localized S (torsion R M) ≤ torsion (Localization S) (LocalizedModule S M) := by
@@ -98,12 +105,16 @@ lemma noZeroSMulDivisors_of_localization (h : ∀ (J : Ideal R) (hJ : J.IsMaxima
   noZeroSMulDivisors_iff_torsion_eq_bot.mpr <| submodule_eq_bot_of_localization _ <| fun J hJ ↦
   localized_torsion J.primeCompl M ▸ noZeroSMulDivisors_iff_torsion_eq_bot.mp <| h J hJ
 
+lemma LocalizedModule.noZeroSMulDivisors (h : NoZeroSMulDivisors R M) :
+    ∀ (J : Ideal R) (hJ : J.IsMaximal),
+    NoZeroSMulDivisors (Localization J.primeCompl) (LocalizedModule J.primeCompl M) :=
+  fun J _ ↦ (noZeroSMulDivisors_iff_torsion_eq_bot.mp h) ▸ localized_torsion J.primeCompl M ▸
+    noZeroSMulDivisors_iff_torsion_eq_bot.mpr <| localized_bot _
+
 lemma noZeroSMulDivisors_of_localization_iff :
     NoZeroSMulDivisors R M ↔ ∀ (J : Ideal R) (hJ : J.IsMaximal),
     NoZeroSMulDivisors (Localization J.primeCompl) (LocalizedModule J.primeCompl M) :=
-  ⟨fun h J _ ↦ (noZeroSMulDivisors_iff_torsion_eq_bot.mp h) ▸ localized_torsion J.primeCompl M ▸
-    noZeroSMulDivisors_iff_torsion_eq_bot.mpr <| localized_bot _ ,
-  fun h ↦ noZeroSMulDivisors_of_localization M h⟩
+  ⟨LocalizedModule.noZeroSMulDivisors M, noZeroSMulDivisors_of_localization M⟩
 
 end NoZeroSMulDivisors_local_property
 
