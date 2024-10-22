@@ -15,25 +15,6 @@ lemma zero_mem_nonZeroDivisors {M : Type u_1} [MonoidWithZero M] [Subsingleton M
 
 end zero_mem_nonZeroDivisors
 
-section IsScalarTower.toSubmodule
-
-variable {A M : Type*} (R : Type*) [CommSemiring R] [Semiring A] [Algebra R A]
-    [AddCommMonoid M] [Module R M] [Module A M] [IsScalarTower R A M]
-    (p : Submodule A M)
-
-def IsScalarTower.toSubmodule : Submodule R M where
-  carrier := p
-  add_mem' := add_mem
-  zero_mem' := zero_mem _
-  smul_mem' := fun _ _ h ↦ smul_of_tower_mem _ _ h
-
-lemma IsScalarTower.toSubmodule_carrier : (IsScalarTower.toSubmodule R p).carrier = p.carrier := rfl
-
-lemma IsScalarTower.mem_toSubmodule_iff (x : M) : x ∈ IsScalarTower.toSubmodule R p ↔ x ∈ p :=
-  Eq.to_iff rfl
-
-end IsScalarTower.toSubmodule
-
 section mk_lemma
 
 variable {R M S_M : Type*} (S_R : Type*) [CommRing R] [CommRing S_R] [Algebra R S_R]
@@ -65,14 +46,14 @@ variable {R M S_M : Type*} (S_R : Type*) [CommRing R] [CommRing S_R] [Algebra R 
     (S : Submonoid R) [IsLocalization S S_R]
     (f : M →ₗ[R] S_M) [IsLocalizedModule S f]
     (S_p : Submodule S_R S_M)
-
-lemma localized'_comap_eq : localized' S_R S f (comap f (IsScalarTower.toSubmodule R S_p)) = S_p := by
+#check Submodule.restrictScalars
+lemma localized'_comap_eq : localized' S_R S f (comap f (restrictScalars R S_p)) = S_p := by
   ext x
   constructor
   all_goals intro h
   · rw [mem_localized'] at h
     rcases h with ⟨m, hm, s, hmk⟩
-    rw [mem_comap, IsScalarTower.mem_toSubmodule_iff] at hm
+    rw [mem_comap, restrictScalars_mem] at hm
     rw [← hmk, ← mk'_right_smul_mk_left' S_R]
     exact smul_mem _ _ hm
   · rw [mem_localized']
@@ -80,7 +61,7 @@ lemma localized'_comap_eq : localized' S_R S f (comap f (IsScalarTower.toSubmodu
     dsimp at hmk
     use m
     constructor
-    · rw [mem_comap, IsScalarTower.mem_toSubmodule_iff, ← mk'_cancel' f m s, hmk]
+    · rw [mem_comap, restrictScalars_mem, ← mk'_cancel' f m s, hmk]
       exact smul_of_tower_mem S_p s h
     · use s
 
@@ -88,7 +69,7 @@ lemma localized'_mono {p q : Submodule R M} : p ≤ q → localized' S_R S f p �
   fun h _ ⟨m, hm, s, hmk⟩ ↦ ⟨m, h hm, s, hmk⟩
 
 def localized'OrderEmbedding : Submodule S_R S_M ↪o Submodule R M where
-  toFun := fun S_p ↦ comap f (IsScalarTower.toSubmodule R S_p)
+  toFun := fun S_p ↦ comap f (restrictScalars R S_p)
   inj' := Function.LeftInverse.injective <| localized'_comap_eq S_R S f
   map_rel_iff' := by
     intro S_p S_q

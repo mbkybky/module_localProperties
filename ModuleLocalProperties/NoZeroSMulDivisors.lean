@@ -32,9 +32,9 @@ lemma Localization.mk_mem_nonZeroDivisors {R : Type*} [CommRing R] (S : Submonoi
 
 end missinglemma
 
-namespace Submodule
-
 section localized_torsion_commutivity
+
+namespace Submodule
 
 variable {R : Type*} [CommRing R] (S : Submonoid R) (M : Type*) [AddCommGroup M] [Module R M]
 
@@ -93,17 +93,12 @@ lemma localized_torsion [IsDomain R] :
     exact localized_torsion_le _ _
     exact localized_torsion_nontrival_ge _ _ trivial
 
+end Submodule
 end localized_torsion_commutivity
 
 section NoZeroSMulDivisors_local_property
 
 variable {R : Type*} [CommRing R] [IsDomain R] (M : Type*) [AddCommGroup M] [Module R M]
-
-lemma noZeroSMulDivisors_of_localization (h : ∀ (J : Ideal R) (hJ : J.IsMaximal),
-    NoZeroSMulDivisors (Localization J.primeCompl) (LocalizedModule J.primeCompl M)) :
-    NoZeroSMulDivisors R M :=
-  noZeroSMulDivisors_iff_torsion_eq_bot.mpr <| submodule_eq_bot_of_localization _ <| fun J hJ ↦
-  localized_torsion J.primeCompl M ▸ noZeroSMulDivisors_iff_torsion_eq_bot.mp <| h J hJ
 
 lemma LocalizedModule.noZeroSMulDivisors (h : NoZeroSMulDivisors R M) :
     ∀ (J : Ideal R) (hJ : J.IsMaximal),
@@ -111,11 +106,20 @@ lemma LocalizedModule.noZeroSMulDivisors (h : NoZeroSMulDivisors R M) :
   fun J _ ↦ (noZeroSMulDivisors_iff_torsion_eq_bot.mp h) ▸ localized_torsion J.primeCompl M ▸
     noZeroSMulDivisors_iff_torsion_eq_bot.mpr <| localized_bot _
 
+namespace Submodule
+
+lemma noZeroSMulDivisors_of_localization (h : ∀ (J : Ideal R) (hJ : J.IsMaximal),
+    NoZeroSMulDivisors (Localization J.primeCompl) (LocalizedModule J.primeCompl M)) :
+    NoZeroSMulDivisors R M :=
+  noZeroSMulDivisors_iff_torsion_eq_bot.mpr <| submodule_eq_bot_of_localization _ <| fun J hJ ↦
+  localized_torsion J.primeCompl M ▸ noZeroSMulDivisors_iff_torsion_eq_bot.mp <| h J hJ
+
 lemma noZeroSMulDivisors_of_localization_iff :
     NoZeroSMulDivisors R M ↔ ∀ (J : Ideal R) (hJ : J.IsMaximal),
     NoZeroSMulDivisors (Localization J.primeCompl) (LocalizedModule J.primeCompl M) :=
   ⟨LocalizedModule.noZeroSMulDivisors M, noZeroSMulDivisors_of_localization M⟩
 
+end Submodule
 end NoZeroSMulDivisors_local_property
 
 section annihilator
