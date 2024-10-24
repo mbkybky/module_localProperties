@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yi Song
 -/
 import Mathlib.Algebra.Module.Submodule.Localization
-
+import Mathlib.RingTheory.Localization.Ideal
 open nonZeroDivisors
 
 namespace IsLocalization
@@ -41,17 +41,52 @@ end IsLocalization.nontrivial
 section IsDomain
 
 variable {R : Type*} (S_R : Type*) [CommRing R] [CommRing S_R] [Algebra R S_R]
-    (S : Submonoid R) [IsLocalization S S_R] [IsDomain R]
+    (S : Submonoid R) [IsLocalization S S_R]
 include S
 
-lemma isDomain_of_isDomain_nontrivial (h : 0 ∉ S) : IsDomain S_R :=
+lemma isDomain_of_isDomain_nontrivial [IsDomain R] (h : 0 ∉ S) : IsDomain S_R :=
   isDomain_of_le_nonZeroDivisors R <| le_nonZeroDivisors_of_noZeroDivisors h
 
-lemma isDomain_of_noZeroDivisors : NoZeroDivisors S_R := by
+lemma isDomain_of_noZeroDivisors [IsDomain R] : NoZeroDivisors S_R := by
   by_cases trivial : 0 ∈ S
   · haveI : Subsingleton S_R := subsingleton trivial
     apply Subsingleton.to_noZeroDivisors
   · haveI := isDomain_of_isDomain_nontrivial S_R S trivial
     apply IsDomain.to_noZeroDivisors
 
+lemma noZeroDivisors_of_noZeroDivisors [NoZeroDivisors R] : NoZeroDivisors S_R := by
+  by_cases nontrivial : Nontrivial R
+  · haveI := (isDomain_iff_noZeroDivisors_and_nontrivial R).mpr ⟨inferInstance , nontrivial⟩
+    exact isDomain_of_noZeroDivisors _ S
+  · haveI := not_nontrivial_iff_subsingleton.mp nontrivial
+    haveI : Subsingleton S_R := subsingleton <| (subsingleton_iff_zero_eq_one.mpr this) ▸ one_mem S
+    apply Subsingleton.to_noZeroDivisors
+
 end IsDomain
+
+section
+
+variable {R : Type*} (S_R : Type*) [CommSemiring R] [CommSemiring S_R] [Algebra R S_R]
+    (S : Submonoid R) [IsLocalization S S_R] (p q : Ideal R)
+include S
+
+lemma ideal_map_inf : Ideal.map (algebraMap R S_R) (p ⊓ q) =
+    Ideal.map (algebraMap R S_R) p ⊓ Ideal.map (algebraMap R S_R) q := by
+  apply eq_of_le_of_le <| Ideal.map_inf_le (algebraMap R S_R)
+  rintro x ⟨hp, hq⟩
+  rcases mk'_surjective S x with ⟨r, s, hmk⟩
+  rw [SetLike.mem_coe] at hp hq
+  rw [← hmk, mk'_mem_map_algebraMap_iff S] at hp hq ⊢
+  rcases hp with ⟨u, hu, hpmk⟩
+  rcases hq with ⟨v, hv, hqmk⟩
+  use u * v
+  constructor
+  · exact Submonoid.mul_mem S hu hv
+  · apply Ideal.mem_inf.mpr
+    constructor
+    · rw [mul_comm u, mul_assoc]
+      exact p.mul_mem_left _ hpmk
+    · rw [mul_assoc]
+      apply q.mul_mem_left _ hqmk
+
+end

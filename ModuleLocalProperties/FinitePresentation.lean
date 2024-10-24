@@ -73,3 +73,29 @@ lemma isNoetherianRing_of_localization_finitespan {R : Type*} [CommRing R](s : F
     IsNoetherianRing R :=
   (isNoetherianRing_iff_ideal_fg _).mpr <| fun _ => Ideal.fg_of_localizationSpan _ spn <|
   fun r => (isNoetherianRing_iff_ideal_fg _).mp (h r) <| _
+
+section
+
+variable {R M S_M : Type*} (S_R : Type*) [CommRing R] [CommRing S_R] [Algebra R S_R]
+    [AddCommGroup M] [Module R M] [AddCommGroup S_M] [Module R S_M] [Module S_R S_M]
+    [IsScalarTower R S_R S_M]
+    (S : Submonoid R) [IsLocalization S S_R]
+    (f : M →ₗ[R] S_M) [IsLocalizedModule S f]
+    {p q : Submodule R M}
+
+
+namespace Submodule
+
+lemma localized'_of_finite (h : p.FG) : (localized' S_R S f p).FG := by
+  rw [fg_def] at h ⊢
+  rcases h with ⟨s, hfin, hspan⟩
+  use f '' s
+  constructor
+  · exact Set.Finite.image f hfin
+  · rw [← hspan, localized'_span]
+
+lemma localized_of_finite (h : p.FG) : (localized S p).FG := localized'_of_finite _ _ _ h
+
+end Submodule
+
+end

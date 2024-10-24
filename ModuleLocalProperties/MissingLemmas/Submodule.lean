@@ -17,8 +17,8 @@ end zero_mem_nonZeroDivisors
 
 section mk_lemma
 
-variable {R M S_M : Type*} (S_R : Type*) [CommRing R] [CommRing S_R] [Algebra R S_R]
-    [AddCommGroup M] [Module R M] [AddCommGroup S_M] [Module R S_M] [Module S_R S_M]
+variable {R M S_M : Type*} (S_R : Type*) [CommSemiring R] [CommSemiring S_R] [Algebra R S_R]
+    [AddCommMonoid M] [Module R M] [AddCommMonoid S_M] [Module R S_M] [Module S_R S_M]
     [IsScalarTower R S_R S_M]
     (S : Submonoid R) [IsLocalization S S_R]
     (f : M →ₗ[R] S_M) [IsLocalizedModule S f]
@@ -30,7 +30,7 @@ lemma mk'_right_smul_mk' (m : M) (s t : S) :
     IsLocalization.mk' S_R 1 s • mk' f m t = mk' f m (s * t) := by
   rw[mk'_smul_mk', one_smul]
 
-lemma mk'_right_smul_mk_left' (m : M) (s : S) :
+lemma mk'_right_smul_mk'_left (m : M) (s : S) :
     IsLocalization.mk' S_R 1 s • f m = mk' f m s := by
   rw[← mul_one s, ← mk'_right_smul_mk' S_R, mk'_one, mul_one]
 
@@ -46,7 +46,7 @@ variable {R M S_M : Type*} (S_R : Type*) [CommRing R] [CommRing S_R] [Algebra R 
     (S : Submonoid R) [IsLocalization S S_R]
     (f : M →ₗ[R] S_M) [IsLocalizedModule S f]
     (S_p : Submodule S_R S_M)
-#check Submodule.restrictScalars
+
 lemma localized'_comap_eq : localized' S_R S f (comap f (restrictScalars R S_p)) = S_p := by
   ext x
   constructor
@@ -54,7 +54,7 @@ lemma localized'_comap_eq : localized' S_R S f (comap f (restrictScalars R S_p))
   · rw [mem_localized'] at h
     rcases h with ⟨m, hm, s, hmk⟩
     rw [mem_comap, restrictScalars_mem] at hm
-    rw [← hmk, ← mk'_right_smul_mk_left' S_R]
+    rw [← hmk, ← mk'_right_smul_mk'_left S_R]
     exact smul_mem _ _ hm
   · rw [mem_localized']
     rcases mk'_surjective S f x with ⟨⟨m, s⟩, hmk⟩
@@ -154,7 +154,7 @@ lemma localized'_span (s : Set M) : localized' S_R S f (span R s) = span S_R (f 
     rw [← hmk]
     clear hmk
     induction' hm using span_induction with a ains a b _ _ hamk hbmk r a _ hamk
-    · rw [← mk'_right_smul_mk_left' S_R]
+    · rw [← mk'_right_smul_mk'_left S_R]
       exact smul_mem _ _ <| mem_span.mpr fun p hsub ↦ hsub <| Set.mem_image_of_mem f ains
     · simp only [mk'_zero, zero_mem]
     · rw [mk'_add]

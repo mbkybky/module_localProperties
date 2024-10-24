@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yi Song
 -/
 import Mathlib.Algebra.Module.Torsion
+import Mathlib.RingTheory.LocalProperties.Basic
 import ModuleLocalProperties.Basic
 
 import ModuleLocalProperties.MissingLemmas.Localization
@@ -23,12 +24,6 @@ lemma NoZeroSMulDivisors.of_subsingleton {R M : Type*} [Zero R] [Zero M] [SMul R
   left
   exact Subsingleton.eq_zero r
 
-lemma Localization.mk_surjective {R : Type*} [CommSemiring R] (S : Submonoid R)
-    (y : Localization S) : ∃ r ,∃ s, Localization.mk r s = y := by
-  rcases IsLocalization.mk'_surjective S y with ⟨r, s, h⟩
-  use r, s
-  rw [← h, mk_eq_mk']
-
 lemma Localization.mk_mem_nonZeroDivisors {R : Type*} [CommRing R] (S : Submonoid R)
     (nontrival : 0 ∉ S) (r : R) (s : S) (h : mk r s ∈ (Localization S)⁰) : r ≠ 0 := by
   haveI := OreLocalization.nontrivial_iff.mpr nontrival
@@ -41,8 +36,51 @@ lemma torsion_of_subsingleton {R M : Type*} [CommSemiring R] [AddCommMonoid M] [
 
 end missinglemma
 
-section localized'_torsion_commutivity
+section annihilator
 
+namespace Submodule
+
+variable {R M : Type*} [CommSemiring R] [AddCommMonoid M] [Module R M]
+  (p q : Submodule R M)
+
+lemma annihilator_sup : annihilator (p ⊔ q) = p.annihilator ⊓ q.annihilator := by
+  apply eq_of_le_of_le
+  · apply le_inf
+    · exact annihilator_mono <| SemilatticeSup.le_sup_left _ _
+    · exact annihilator_mono <| SemilatticeSup.le_sup_right _ _
+  · intro x hx
+    rcases mem_inf.mp hx with ⟨hp, hq⟩
+    rw [mem_annihilator'] at hp hq ⊢
+    exact sup_le hp hq
+
+end Submodule
+end annihilator
+
+section noZeroSMulDivisors_iff_annihilator_singleton_eq_bot
+
+variable {R M : Type*} [CommSemiring R] [AddCommMonoid M] [Module R M]
+
+namespace Submodule
+
+lemma noZeroSMulDivisors_iff_annihilator_singleton_eq_bot :
+    NoZeroSMulDivisors R M ↔ ∀ m : M, m ≠ 0 → (span R {m}).annihilator = ⊥ := by
+  rw [noZeroSMulDivisors_iff]
+  constructor
+  all_goals intro h
+  · intro m hm
+    rw [Submodule.eq_bot_iff]
+    intro r hr
+    rw [mem_annihilator_span_singleton] at hr
+    exact or_iff_not_imp_right.mp (h hr) hm
+  · intro r m hmul
+    rw [or_iff_not_imp_right]
+    intro hm
+    exact ((Submodule.eq_bot_iff _).mp <| h m hm) r <| (mem_annihilator_span_singleton m r).mpr hmul
+
+end Submodule
+end noZeroSMulDivisors_iff_annihilator_singleton_eq_bot
+
+section localized'_torsion_commutivity
 variable {R M S_M : Type*} (S_R : Type*) [CommRing R] [CommRing S_R] [Algebra R S_R]
     [AddCommGroup M] [Module R M] [AddCommGroup S_M] [Module R S_M] [Module S_R S_M]
     [IsScalarTower R S_R S_M]
@@ -63,7 +101,7 @@ lemma localized'_torsion_le :
   dsimp
   rw [← hmk, algebraMap_smul, ← mk'_smul, hr', IsLocalizedModule.mk'_zero]
 
-lemma localized'_torsion_nontrival_ge [IsDomain R] (nontrivial : 0 ∉ S) :
+lemma localized'_torsion_nontrival_ge [NoZeroDivisors R] (nontrivial : 0 ∉ S) :
     localized' S_R S f (torsion R M) ≥ torsion S_R S_M := by
   intro x h
   rcases (mem_torsion_iff _).mp h with ⟨y, hxy⟩
@@ -88,12 +126,12 @@ lemma localized'_torsion_nontrival_ge [IsDomain R] (nontrivial : 0 ∉ S) :
     exact hc
   · use s
 
-lemma localized'_torsion_trival [IsDomain R] (trivial : 0 ∈ S) :
+lemma localized'_torsion_trival [NoZeroDivisors R] (trivial : 0 ∈ S) :
     localized' S_R S f (torsion R M) = torsion S_R S_M :=
   (torsion_of_subsingleton (R := S_R) (M := S_M) <|
   IsLocalization.subsingleton trivial) ▸ localized'_of_trivial _ S f trivial
 
-lemma localized'_torsion [IsDomain R] :
+lemma localized'_torsion [NoZeroDivisors R] :
     localized' S_R S f (torsion R M) = torsion S_R S_M := by
   by_cases trivial : 0 ∈ S
   · exact localized'_torsion_trival _ _ _ trivial
@@ -102,17 +140,6 @@ lemma localized'_torsion [IsDomain R] :
     exact localized'_torsion_nontrival_ge _ _ _ trivial
 
 end Submodule
-
-lemma IsLocalizedModule.noZeroSMulDivisors [IsDomain R] (h : NoZeroSMulDivisors R M) :
-    NoZeroSMulDivisors S_R S_M := by
-  by_cases ht : 0 ∈ S
-  · haveI : Subsingleton S_R := IsLocalization.subsingleton ht
-    exact NoZeroSMulDivisors.of_subsingleton
-  · haveI := IsLocalization.isDomain_of_noZeroDivisors S_R S
-    haveI := IsLocalization.nontrivial S_R S ht
-    rw [noZeroSMulDivisors_iff_torsion_eq_bot] at h ⊢
-    rw [← localized'_torsion _ S f, h, localized'_bot]
-
 end localized'_torsion_commutivity
 
 section localized_torsion_commutivity
@@ -125,43 +152,170 @@ lemma localized_torsion_le :
     localized S (torsion R M) ≤ torsion (Localization S) (LocalizedModule S M) :=
   localized'_torsion_le _ _ _
 
-lemma localized_torsion_nontrival_ge [IsDomain R] (nontrivial : 0 ∉ S) :
+lemma localized_torsion_nontrival_ge [NoZeroDivisors R] (nontrivial : 0 ∉ S) :
     localized S (torsion R M) ≥ torsion (Localization S) (LocalizedModule S M) :=
   localized'_torsion_nontrival_ge _ _ _ nontrivial
 
-lemma localized_torsion_trival [IsDomain R] (trivial : 0 ∈ S) :
+lemma localized_torsion_trival [NoZeroDivisors R] (trivial : 0 ∈ S) :
     localized S (torsion R M) = torsion (Localization S) (LocalizedModule S M) :=
   localized'_torsion_trival _ _ _ trivial
 
-lemma localized_torsion [IsDomain R] :
+lemma localized_torsion [NoZeroDivisors R] :
     localized S (torsion R M) = torsion (Localization S) (LocalizedModule S M) :=
   localized'_torsion _ _ _
 
 end Submodule
-
-lemma LocalizedModule.noZeroSMulDivisors [IsDomain R] (h : NoZeroSMulDivisors R M) :
-    NoZeroSMulDivisors (Localization S) (LocalizedModule S M) :=
-  IsLocalizedModule.noZeroSMulDivisors _ S (mkLinearMap S M) h
-
 end localized_torsion_commutivity
 
-section NoZeroSMulDivisors_local_property
+section localized'_annihilator_commutivity
 
-variable {R : Type*} [CommRing R] [IsDomain R] (M : Type*) [AddCommGroup M] [Module R M]
+variable {R M S_M : Type*} (S_R : Type*) [CommSemiring R] [CommSemiring S_R] [Algebra R S_R]
+    [AddCommMonoid M] [Module R M] [AddCommMonoid S_M] [Module R S_M] [Module S_R S_M]
+    [IsScalarTower R S_R S_M]
+    (S : Submonoid R) [IsLocalization S S_R]
+    (f : M →ₗ[R] S_M) [IsLocalizedModule S f]
+include S f
+
+lemma IsLocalizedModule.span_eq (s : Set M) (t : S) :
+    span S_R ((fun m ↦ mk' f m t) '' s) = span S_R (f '' s) := by
+  ext x
+  constructor
+  all_goals intro h
+  · induction' h using span_induction with a ains a b _ _ ha hb u a _ ha
+    · rcases ains with ⟨m, hm, hmk⟩
+      dsimp at hmk
+      rw [← hmk, ← mk'_right_smul_mk'_left S_R]
+      exact smul_mem _ _ <| mem_span.mpr fun p hsub ↦ hsub <| Set.mem_image_of_mem f hm
+    · simp only [Submodule.zero_mem]
+    · exact add_mem ha hb
+    · exact smul_mem _ _ ha
+  · induction' h using span_induction with a ains a b _ _ ha hb u a _ ha
+    · rcases ains with ⟨m, hm, hmk⟩
+      rw [← hmk, ← mk'_cancel' f m t]
+      exact smul_of_tower_mem _ _<| mem_span.mpr fun p hsub ↦ hsub <|
+        Set.mem_image_of_mem (fun m ↦ mk' f m t) hm
+    · simp only [Submodule.zero_mem]
+    · exact add_mem ha hb
+    · exact smul_mem _ _ ha
+
+lemma IsLocalizedModule.span_singleton_eq (m : M) (s : S) :
+    span S_R {mk' f m s} = span S_R {f m} := by
+  have := Set.image_singleton ▸ Set.image_singleton ▸ IsLocalizedModule.span_eq S_R S f {m} s
+  exact this
+
+lemma IsLocalizedModule.annihilator_span_singleton (m : M) :
+    (span S_R {f m}).annihilator = Ideal.map (algebraMap R S_R) (span R {m}).annihilator := by
+  ext u
+  rw [mem_annihilator_span_singleton]
+  constructor
+  all_goals intro h
+  · rcases IsLocalization.mk'_surjective S u with ⟨r, s, hmk⟩
+    rw [← hmk, ← mk'_one S, mk'_smul_mk', mk'_eq_zero'] at h
+    rcases h with ⟨w, hw⟩
+    rw [← IsLocalization.mk'_cancel _ _ w, mul_comm, IsLocalization.mk'_eq_mul_mk'_one] at hmk
+    have hin : w • r ∈ (annihilator (span R {m})) := by
+      rw [mem_annihilator_span_singleton, smul_assoc, hw]
+    apply Ideal.mem_map_of_mem (algebraMap R S_R) at hin
+    rw [Submonoid.smul_def, smul_eq_mul] at hin
+    rw [← hmk]
+    exact Ideal.mul_mem_right _ _ hin
+  · induction' h using span_induction with a hain a b _ _ ha hb x a _ ha
+    · rcases hain with ⟨r, hr, hmk⟩
+      rw [SetLike.mem_coe, mem_annihilator_span_singleton] at hr
+      rw [← hmk, algebraMap_smul, ← map_smul, hr, map_zero]
+    · rw [zero_smul]
+    · rw [add_smul, ha, hb, zero_add]
+    · rw [smul_assoc, ha, smul_zero]
+
+end localized'_annihilator_commutivity
+
+section localized'_annihilator_commutivity
+
+variable {R M S_M : Type*} (S_R : Type*) [CommRing R] [CommRing S_R] [Algebra R S_R]
+    [AddCommGroup M] [Module R M] [AddCommGroup S_M] [Module R S_M] [Module S_R S_M]
+    [IsScalarTower R S_R S_M]
+    (S : Submonoid R) [IsLocalization S S_R]
+    (f : M →ₗ[R] S_M) [IsLocalizedModule S f]
+    (p q : Submodule R M)
+include S f
 
 namespace Submodule
 
+lemma annihilator_localized'_sup_of_commute
+    (hp : (localized' S_R S f p).annihilator = Ideal.map (algebraMap R S_R) p.annihilator)
+    (hq : (localized' S_R S f q).annihilator = Ideal.map (algebraMap R S_R) q.annihilator) :
+    (localized' S_R S f (p ⊔ q)).annihilator = Ideal.map (algebraMap R S_R) (p ⊔ q).annihilator :=
+  by
+  rw [localized'_sup, annihilator_sup, hp, hq, annihilator_sup, IsLocalization.ideal_map_inf _ S]
+
+lemma annihilator_localized'_of_finite (h : p.FG) :
+    (localized' S_R S f p).annihilator = Ideal.map (algebraMap R S_R) p.annihilator :=
+  fg_induction _ _
+  (fun p ↦ (localized' S_R S f p).annihilator = Ideal.map (algebraMap R S_R) p.annihilator)
+  (fun m ↦ by dsimp ; rw [localized'_span, Set.image_singleton, annihilator_span_singleton _ S])
+  (fun p q hp hq ↦ annihilator_localized'_sup_of_commute S_R S f p q hp hq)
+  p h
+
+end Submodule
+end localized'_annihilator_commutivity
+
+section NoZeroSMulDivisors_local_property
+
+namespace IsLocalizeModule
+
+variable {R M S_M : Type*} (S_R : Type*) [CommRing R] [CommRing S_R] [Algebra R S_R]
+    [AddCommGroup M] [Module R M] [AddCommGroup S_M] [Module R S_M] [Module S_R S_M]
+    [IsScalarTower R S_R S_M]
+    (S : Submonoid R) [IsLocalization S S_R]
+    (f : M →ₗ[R] S_M) [IsLocalizedModule S f]
+    (p q : Submodule R M)
+include S f
+
+lemma noZeroSMulDivisors [h : NoZeroSMulDivisors R M] :
+    NoZeroSMulDivisors S_R S_M :=by
+  rw [noZeroSMulDivisors_iff_annihilator_singleton_eq_bot] at h ⊢
+  intro x hx
+  rcases mk'_surjective S f x with ⟨⟨m, s⟩, hmk⟩
+  dsimp at hmk
+  have hm : m ≠ 0 := by
+    by_contra hm
+    rw [hm, mk'_zero, eq_comm] at hmk
+    exact hx hmk
+  rw [← hmk, span_singleton_eq, annihilator_span_singleton _ S, h m hm, Ideal.map_bot]
+
+end IsLocalizeModule
+
+variable {R : Type*} [CommRing R] (M : Type*) [AddCommGroup M] [Module R M]
+
+namespace LocalizeModule
+
+lemma noZeroSMulDivisors [h : NoZeroSMulDivisors R M] (S : Submonoid R) :
+    NoZeroSMulDivisors (Localization S) (LocalizedModule S M) :=
+  IsLocalizeModule.noZeroSMulDivisors _ S (mkLinearMap S M)
+
 lemma noZeroSMulDivisors_of_localization (h : ∀ (J : Ideal R) (hJ : J.IsMaximal),
     NoZeroSMulDivisors (Localization J.primeCompl) (LocalizedModule J.primeCompl M)) :
-    NoZeroSMulDivisors R M :=
-  noZeroSMulDivisors_iff_torsion_eq_bot.mpr <| submodule_eq_bot_of_localization _ <| fun J hJ ↦
-  localized_torsion J.primeCompl M ▸ noZeroSMulDivisors_iff_torsion_eq_bot.mp <| h J hJ
+    NoZeroSMulDivisors R M := by
+  rw [noZeroSMulDivisors_iff_annihilator_singleton_eq_bot]
+  intro m hm
+  apply ideal_eq_bot_of_localization'
+  intro J hJ
+  specialize h J hJ
+  rw [noZeroSMulDivisors_iff_annihilator_singleton_eq_bot] at h
+  have : ((mkLinearMap J.primeCompl M) m) ≠ 0 :=by
+    by_contra h
+    rw [mkLinearMap_apply] at h
+
+    sorry
+  specialize h ((mkLinearMap J.primeCompl M) m)
+  have :(span (Localization J.primeCompl) {(mkLinearMap J.primeCompl M) m}).annihilator = ⊥ := sorry
+  rw [annihilator_span_singleton _ J.primeCompl] at this
+  exact this
 
 lemma noZeroSMulDivisors_of_localization_iff :
     NoZeroSMulDivisors R M ↔ ∀ (J : Ideal R) (hJ : J.IsMaximal),
     NoZeroSMulDivisors (Localization J.primeCompl) (LocalizedModule J.primeCompl M) :=
-  ⟨fun h J _ ↦ LocalizedModule.noZeroSMulDivisors J.primeCompl _ h,
+  ⟨fun h J _ ↦ LocalizeModule.noZeroSMulDivisors M J.primeCompl,
     noZeroSMulDivisors_of_localization M⟩
-
-end Submodule
+end LocalizeModule
 end NoZeroSMulDivisors_local_property
