@@ -181,5 +181,6 @@ noncomputable def aut_equiv_of_finrank_eq_one {F S A : Type*}
     intro x
     apply AlgEquiv.ext
     intro y
-    simp?  [AlgEquiv.restrictScalarsHom, AlgEquiv.restrictScalars]
+    simp only [AlgEquiv.restrictScalarsHom, AlgEquiv.restrictScalars, RingEquiv.toEquiv_eq_coe,
+      MonoidHom.coe_mk, OneHom.coe_mk, AlgEquiv.coe_mk, EquivLike.coe_coe, AlgEquiv.coe_ringEquiv]
   map_mul' := (AlgEquiv.restrictScalarsHom F S A).map_mul'
