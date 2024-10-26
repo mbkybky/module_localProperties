@@ -4,6 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yongle Hu
 -/
 import Mathlib.NumberTheory.NumberField.Basic
+import Mathlib.RingTheory.Ideal.Quotient
+import Mathlib.RingTheory.Finiteness
+import Mathlib.RingTheory.Ideal.Over
 
 section
 
@@ -32,7 +35,38 @@ def Module.Finite.finiteOfFinite {R M : Type*} [CommRing R] [Finite R] [AddCommM
 
 variable {R : Type*} [CommRing R] [h : Module.Finite ℤ R]
 
-theorem Ideal.Quotient.finite_of_module_finite_int {I : Ideal R} (hp : I ≠ ⊥) : Finite (R ⧸ I) := sorry
+lemma My_Module.Finite.exists_fin' (R : Type u_1) {M : Type u_4} [Semiring R] [AddCommMonoid M] [Module R M]
+  [Finite R] [Module.Finite R M] : Finite M := by
+  obtain ⟨n, f, hf⟩ := Module.Finite.exists_fin' R M;
+   exact .of_surjective f hf
+
+theorem Ideal.Quotient.finite_of_module_finite_int [IsDomain R]{I : Ideal R} (hp : I ≠ ⊥) : Finite (R ⧸ I) := by
+  have : I.comap (algebraMap ℤ R) ≠ ⊥ := by
+    obtain ⟨x, hx1, hx2⟩ : ∃ x : R ,x ∈ I ∧ x ≠ 0 := by
+      have := mt (Submodule.eq_bot_iff I).mpr hp
+      push_neg at this
+      exact this
+    apply Ideal.comap_ne_bot_of_integral_mem hx2 hx1 <| Algebra.IsIntegral.isIntegral x
+
+  -- let f := (Ideal.Quotient.mk I).comp <| algebraMap ℤ R
+  -- have : ℤ ⧸ (f.toAddMonoidHom).ker ≃+ (f.toAddMonoidHom).range := by
+  --   exact QuotientAddGroup.quotientKerEquivRange f.toAddMonoidHom
+
+  have t1 : Module.Finite (ℤ ⧸ I.comap (algebraMap ℤ R)) (R ⧸ I) := by
+
+    sorry
+  have t2 : Finite (ℤ ⧸ I.comap (algebraMap ℤ R)) := by
+    -- have : IsPrincipalIdealRing ℤ := EuclideanDomain.to_principal_ideal_domain
+    have : Submodule.IsPrincipal (I.comap (algebraMap ℤ R)) :=
+      IsPrincipalIdealRing.principal (comap (algebraMap ℤ R) I)
+    have : ∃ a : ℤ , (I.comap (algebraMap ℤ R)) = span ({a}: Set ℤ) :=
+      Submodule.IsPrincipal.principal'
+    obtain ⟨a,ha⟩ := this
+    rw [ha]
+    -- refine finite_iff_exists_equiv_fin.mpr ?intro.a
+
+    sorry
+  exact My_Module.Finite.exists_fin' (ℤ ⧸ comap (algebraMap ℤ R) I)
 
 -- `NoZeroSMulDivisors` can be removed
 instance Ideal.Quotient.finite_of_module_finite_int_of_isMaxiaml [NoZeroSMulDivisors ℤ R] [IsDomain R]
