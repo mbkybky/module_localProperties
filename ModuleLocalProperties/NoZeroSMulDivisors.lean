@@ -291,12 +291,12 @@ variable {R : Type*} [CommRing R] (M : Type*) [AddCommGroup M] [Module R M]
 lemma noZeroSMulDivisors_of_localization [NoZeroDivisors R] (h : ∀ (J : Ideal R) (hJ : J.IsMaximal),
     NoZeroSMulDivisors (Localization J.primeCompl) (LocalizedModule J.primeCompl M)) :
     NoZeroSMulDivisors R M := by
-  by_cases trivial : Nontrivial R
+  by_cases nontrivial : Nontrivial R
   · haveI : IsDomain R := IsDomain.mk
     exact noZeroSMulDivisors_iff_torsion_eq_bot.mpr <| submodule_eq_bot_of_localization _ <|
       fun J hJ ↦ localized_torsion J.primeCompl M ▸ noZeroSMulDivisors_iff_torsion_eq_bot.mp <|
         h J hJ
-  · haveI := not_nontrivial_iff_subsingleton.mp trivial
+  · haveI := not_nontrivial_iff_subsingleton.mp nontrivial
     exact NoZeroSMulDivisors.of_subsingleton
 
 lemma noZeroSMulDivisors_of_localization_iff [NoZeroDivisors R] :
@@ -304,6 +304,32 @@ lemma noZeroSMulDivisors_of_localization_iff [NoZeroDivisors R] :
     NoZeroSMulDivisors (Localization J.primeCompl) (LocalizedModule J.primeCompl M) :=
   ⟨fun h J _ ↦ LocalizeModule.noZeroSMulDivisors M J.primeCompl,
     noZeroSMulDivisors_of_localization M⟩
+
+end LocalizeModule
+namespace LocalizeModule
+
+variable {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M]
+(s : Finset R) (spn : Ideal.span (s : Set R) = ⊤)
+include spn
+
+lemma noZeroSMulDivisors_of_localization_finitespan [NoZeroDivisors R]
+    (hs : 0 ∉ s)
+    (h : ∀ r : s, NoZeroSMulDivisors
+    (Localization (Submonoid.powers r.1)) (LocalizedModule (Submonoid.powers r.1) M)) :
+    NoZeroSMulDivisors R M := by
+  by_cases trivial : Nontrivial R
+  · haveI : IsDomain R := IsDomain.mk
+    exact noZeroSMulDivisors_iff_torsion_eq_bot.mpr <|
+      submodule_eq_bot_of_localization_finitespan _ _ spn <|
+      fun r ↦ localized_torsion (Submonoid.powers r.1) M ▸ by
+        haveI : IsDomain (Localization (Submonoid.powers r.1)) := by
+          apply IsLocalization.isDomain_of_le_nonZeroDivisors (M := (Submonoid.powers r.1))
+          apply powers_le_nonZeroDivisors_of_noZeroDivisors
+          by_contra heq
+          exact hs (heq ▸ r.prop)
+        exact noZeroSMulDivisors_iff_torsion_eq_bot.mp <| h r
+  · haveI := not_nontrivial_iff_subsingleton.mp trivial
+    exact NoZeroSMulDivisors.of_subsingleton
 
 end LocalizeModule
 end NoZeroSMulDivisors_local_property
