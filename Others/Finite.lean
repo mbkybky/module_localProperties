@@ -69,9 +69,9 @@ instance Ideal.Quotient.finite_of_module_finite_int_of_isMaxiaml
     have : Module.Finite ℤ (R ⧸ p) := Module.Finite.quotient ℤ p
     have : Algebra (ℤ ⧸ RingHom.ker (algebraMap ℤ (R ⧸ p))) (R ⧸ p) :=
       (RingHom.kerLift <| algebraMap ℤ <| R ⧸ p).toAlgebra
-    have t1 : Module.Finite (ℤ ⧸ RingHom.ker (algebraMap ℤ (R ⧸ p))) (R ⧸ p) := by
+    have : Module.Finite (ℤ ⧸ RingHom.ker (algebraMap ℤ (R ⧸ p))) (R ⧸ p) := by
       apply Module.Finite.of_restrictScalars_finite ℤ
-    have t2 : Finite (ℤ ⧸ RingHom.ker (algebraMap ℤ (R ⧸ p))) :=
+    have : Finite (ℤ ⧸ RingHom.ker (algebraMap ℤ (R ⧸ p))) :=
       Int.Quotient.finite_of_ne_bot <| ne_of_mem_of_not_mem' t0 <| sub_ne_zero_of_ne neq
     exact My_copy_Module.finite_of_finite (ℤ ⧸ RingHom.ker (algebraMap ℤ (R ⧸ p)))
 
