@@ -62,11 +62,8 @@ instance Ideal.Quotient.finite_of_module_finite_int_of_isMaxiaml
       Function.not_injective_iff.mp hzr
     have t0 : (algebraMap ℤ (R ⧸ p)) (x - y) = 0 := by
       show (algebraMap R (R ⧸ p)) ((algebraMap ℤ R) (x - y)) = 0
-      have : (algebraMap ℤ R) (x - y) = (algebraMap ℤ R) x - (algebraMap ℤ R) y :=
-        algebraMap.coe_sub x y
-      rw [this, eq]
+      rw [RingHom.map_sub (algebraMap ℤ R) x y, eq]
       simp only [algebraMap_eq, algebraMap_int_eq, eq_intCast, sub_self, map_zero]
-    have : Module.Finite ℤ (R ⧸ p) := Module.Finite.quotient ℤ p
     have : Algebra (ℤ ⧸ RingHom.ker (algebraMap ℤ (R ⧸ p))) (R ⧸ p) :=
       (RingHom.kerLift <| algebraMap ℤ <| R ⧸ p).toAlgebra
     have : Module.Finite (ℤ ⧸ RingHom.ker (algebraMap ℤ (R ⧸ p))) (R ⧸ p) := by
