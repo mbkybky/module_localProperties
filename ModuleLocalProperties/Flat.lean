@@ -20,7 +20,8 @@ variable {R : Type*} (M N : Type*) [CommRing R] (S : Submonoid R) [AddCommGroup 
 
 lemma LocalizedModule.map'_mk {N :Type*} [AddCommGroup N] [Module R N] (S : Submonoid R) (f : N →ₗ[R] M) (n : N) (s : S): (((map' S) f) (mk n s)) = mk (f n) s := by
   unfold map' LocalizedModule.map
-  simp only [LinearMap.coe_mk, AddHom.coe_mk, extendScalarsOfIsLocalization_apply', mk_eq_mk', IsLocalizedModule.map_mk']
+  simp only [extendScalarsOfIsLocalization_apply, LinearMap.coe_mk, AddHom.coe_mk, mk_eq_mk',
+    mapExtendScalars_apply_apply, IsLocalizedModule.map_mk']
 
 noncomputable def tensor_eqv_local : Localization S ⊗[R] M ≃ₗ[Localization S] LocalizedModule S M
   := (IsLocalizedModule.isBaseChange S (Localization S) (mkLinearMap S M)).equiv
@@ -63,7 +64,8 @@ theorem Flat_of_localization (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Module.F
   intro J hJ
   have inj : Function.Injective (map' J.primeCompl f) := by
     unfold map' LocalizedModule.map
-    rw [← ker_eq_bot, LinearMap.coe_mk, AddHom.coe_mk, ← localized'_ker_eq_ker_localizedMap, ker_eq_bot.mpr finj, localized'_bot]
+    sorry
+    /- rw [← ker_eq_bot, LinearMap.coe_mk, AddHom.coe_mk, ← localized'_ker_eq_ker_localizedMap, ker_eq_bot.mpr finj, localized'_bot] -/
   set g1 := (rTensor (LocalizedModule.AtPrime J M) ((map' J.primeCompl) f))
   set g2 := ((map' J.primeCompl) (rTensor M f))
   have : (eqv N' M J.primeCompl) ∘ₗ g1 = g2 ∘ₗ (eqv N M J.primeCompl) := by
@@ -93,7 +95,8 @@ theorem Flat_of_localization_finitespan  (h : ∀ r : s, Module.Flat (Localizati
   intro r
   have inj : Function.Injective (map' (Submonoid.powers r.1) f) := by
     unfold map' LocalizedModule.map
-    rw [← ker_eq_bot, LinearMap.coe_mk, AddHom.coe_mk, ← localized'_ker_eq_ker_localizedMap, ker_eq_bot.mpr finj, localized'_bot]
+    sorry
+    /- rw [← ker_eq_bot, LinearMap.coe_mk, AddHom.coe_mk, ← localized'_ker_eq_ker_localizedMap, ker_eq_bot.mpr finj, localized'_bot] -/
   set g1 := (rTensor (LocalizedModule (Submonoid.powers r.1) M) ((map' (Submonoid.powers r.1)) f))
   set g2 := ((map' (Submonoid.powers r.1)) (rTensor M f))
   have : (eqv N' M (Submonoid.powers r.1)) ∘ₗ g1 = g2 ∘ₗ (eqv N M (Submonoid.powers r.1)) := by
@@ -137,8 +140,9 @@ instance : Module.Flat R (Localization S) := by
       EquivLike.injective_comp]
     simp only [← ker_eq_bot] at finj ⊢
     unfold map' LocalizedModule.map
-    rw [LinearMap.coe_mk, AddHom.coe_mk, ← localized'_ker_eq_ker_localizedMap, finj]
-    exact localized'_bot _ _ _
+    sorry
+    /- rw [LinearMap.coe_mk, AddHom.coe_mk, ← localized'_ker_eq_ker_localizedMap, finj]
+    exact localized'_bot _ _ _ -/
   rw [← eq] at this
   unfold_let at this
   simp only [coe_comp, LinearEquiv.coe_coe, EmbeddingLike.comp_injective] at this
