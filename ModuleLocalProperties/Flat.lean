@@ -56,16 +56,18 @@ end Tensor
 section flatlocal
 variable {R : Type*} (M N : Type*) [CommRing R] (S : Submonoid R) [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N]
 
-theorem Flat_of_localization (h : ∀ (J : Ideal R) (hJ : J.IsMaximal), Module.Flat (Localization.AtPrime J)
-    (LocalizedModule.AtPrime J M)) : Module.Flat R M := by
+theorem Flat_of_localization (h : ∀ (J : Ideal R) (hJ : J.IsMaximal),
+    Module.Flat (Localization.AtPrime J) (LocalizedModule.AtPrime J M)) : Module.Flat R M := by
   apply (Module.Flat.iff_rTensor_preserves_injective_linearMap R M).mpr
   intro N N' _ _ _ _ f finj
   apply injective_of_localization
   intro J hJ
   have inj : Function.Injective (map' J.primeCompl f) := by
-    unfold map' LocalizedModule.map
-    sorry
-    /- rw [← ker_eq_bot, LinearMap.coe_mk, AddHom.coe_mk, ← localized'_ker_eq_ker_localizedMap, ker_eq_bot.mpr finj, localized'_bot] -/
+    unfold map' LocalizedModule.map mapExtendScalars
+    simp only [coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.coe_mk,
+      LinearEquiv.restrictScalars_apply, extendScalarsOfIsLocalizationEquiv_apply,
+      restrictScalars_extendScalarsOfIsLocalization, AddHom.coe_mk, ← ker_eq_bot, coe_toAddHom]
+    rw [ ← localized'_ker_eq_ker_localizedMap, ker_eq_bot.mpr finj, localized'_bot]
   set g1 := (rTensor (LocalizedModule.AtPrime J M) ((map' J.primeCompl) f))
   set g2 := ((map' J.primeCompl) (rTensor M f))
   have : (eqv N' M J.primeCompl) ∘ₗ g1 = g2 ∘ₗ (eqv N M J.primeCompl) := by
@@ -94,9 +96,11 @@ theorem Flat_of_localization_finitespan  (h : ∀ r : s, Module.Flat (Localizati
   apply injective_of_localization_finitespan s spn
   intro r
   have inj : Function.Injective (map' (Submonoid.powers r.1) f) := by
-    unfold map' LocalizedModule.map
-    sorry
-    /- rw [← ker_eq_bot, LinearMap.coe_mk, AddHom.coe_mk, ← localized'_ker_eq_ker_localizedMap, ker_eq_bot.mpr finj, localized'_bot] -/
+    unfold map' LocalizedModule.map mapExtendScalars
+    simp only [coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.coe_mk,
+      LinearEquiv.restrictScalars_apply, extendScalarsOfIsLocalizationEquiv_apply,
+      restrictScalars_extendScalarsOfIsLocalization, AddHom.coe_mk, ← ker_eq_bot, coe_toAddHom]
+    rw [ ← localized'_ker_eq_ker_localizedMap, ker_eq_bot.mpr finj, localized'_bot]
   set g1 := (rTensor (LocalizedModule (Submonoid.powers r.1) M) ((map' (Submonoid.powers r.1)) f))
   set g2 := ((map' (Submonoid.powers r.1)) (rTensor M f))
   have : (eqv N' M (Submonoid.powers r.1)) ∘ₗ g1 = g2 ∘ₗ (eqv N M (Submonoid.powers r.1)) := by
@@ -117,12 +121,14 @@ theorem Flat_of_localization_finitespan  (h : ∀ r : s, Module.Flat (Localizati
   exact inj
 end flatlocal
 
+section flatifflocal
+
 variable (R R' : Type*) [CommRing R] [CommRing R'] [Algebra R R'] (S : Submonoid R) [IsLocalization S R']
 include S
 instance : Module.Flat R (Localization S) := by
   apply (Module.Flat.iff_lTensor_preserves_injective_linearMap R _).mpr
   intro N N' _ _ _ _ f finj
-  set g1 := ((tensor_eqv_local N' S).restrictScalars R).toLinearMap ∘ₗ (LinearMap.lTensor (Localization S) f)
+  set g1 := ((tensor_eqv_local N' S).restrictScalars R).toLinearMap ∘ₗ (LinearMap.lTensor _ f)
   set g2 := (map' S f).restrictScalars R ∘ₗ ((tensor_eqv_local N S).restrictScalars R).toLinearMap
   have eq : g1 = g2 := by
     apply TensorProduct.ext'
@@ -139,10 +145,11 @@ instance : Module.Flat R (Localization S) := by
     simp only [coe_comp, LinearMap.coe_restrictScalars, LinearEquiv.coe_coe,
       EquivLike.injective_comp]
     simp only [← ker_eq_bot] at finj ⊢
-    unfold map' LocalizedModule.map
-    sorry
-    /- rw [LinearMap.coe_mk, AddHom.coe_mk, ← localized'_ker_eq_ker_localizedMap, finj]
-    exact localized'_bot _ _ _ -/
+    unfold map' LocalizedModule.map mapExtendScalars
+    simp only [coe_comp, LinearEquiv.coe_coe, Function.comp_apply, LinearMap.coe_mk,
+      LinearEquiv.restrictScalars_apply, extendScalarsOfIsLocalizationEquiv_apply,
+      restrictScalars_extendScalarsOfIsLocalization, AddHom.coe_mk, ← ker_eq_bot, coe_toAddHom]
+    rw [ ← localized'_ker_eq_ker_localizedMap,finj, localized'_bot]
   rw [← eq] at this
   unfold_let at this
   simp only [coe_comp, LinearEquiv.coe_coe, EmbeddingLike.comp_injective] at this
@@ -157,3 +164,27 @@ theorem flat_iff_localization : Module.Flat R' M' ↔ Module.Flat R M' := by
   letI := isLocalizedModule_id S M' R'
   letI := IsLocalization.Flat R R' S
   exact ⟨fun h ↦ Module.Flat.comp R R' M', fun h ↦ Module.Flat.of_isLocalizedModule R' S LinearMap.id⟩
+
+end flatifflocal
+
+variable {R A : Type*} [CommRing R] [CommRing A] [Algebra R A]
+variable {M : Type*} [AddCommGroup M] [Module R M] [Module A M] [IsScalarTower R A M]
+
+noncomputable instance (J : Ideal A) [J.IsPrime] :
+    Module (Localization.AtPrime (Ideal.comap (algebraMap R A) J)) (LocalizedModule.AtPrime J M) :=
+  Module.compHom (LocalizedModule.AtPrime J M)
+  (Localization.localRingHom (Ideal.comap (algebraMap R A) J) J (algebraMap R A) rfl)
+
+lemma flatiff : Module.Flat R M ↔ ( ∀ (J : Ideal A) (hJ : J.IsMaximal), Module.Flat
+    (Localization.AtPrime (Ideal.comap (algebraMap R A) J)) (LocalizedModule.AtPrime J M)) := by
+  constructor
+  · intro h J hJ
+    apply (Module.Flat.iff_rTensor_preserves_injective_linearMap _ _).mpr
+    intro N N' _ _ _ _ f inj
+    -- apply (Module.Flat.iff_lTensor_injective' _ (LocalizedModule.AtPrime J M)).mpr
+    -- intro I
+    sorry
+  · intro h
+    apply (Module.Flat.iff_rTensor_injective' R M).mpr
+    intro I
+    sorry
