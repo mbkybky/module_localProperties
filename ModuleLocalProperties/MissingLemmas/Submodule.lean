@@ -99,24 +99,6 @@ lemma localized'_of_trivial (h : 0 ∈ S) : localized' S_R S f p = ⊤ := by
   refine ⟨0, ⟨Submodule.zero_mem p, ⟨⟨0, h⟩, ?_ ⟩⟩⟩
   rw [mk'_eq_iff, map_zero, Submonoid.mk_smul, zero_smul]
 
-lemma localized'_bot : localized' S_R S f ⊥ = ⊥ := by
-  have : ∃ x, x ∈ S := ⟨1, Submonoid.one_mem S⟩
-  ext x
-  rw [mem_localized']
-  simp only [mem_bot, Subtype.exists, exists_eq_left, mk'_zero, exists_prop', nonempty_prop,
-    exists_and_right, this, true_and]
-  exact eq_comm
-
-lemma localized'_top : localized' S_R S f ⊤ = ⊤ := by
-  haveI h : IsLocalizedModule S f := inferInstance
-  ext x
-  rw [mem_localized']
-  rcases  h.surj' x with ⟨⟨u, v⟩, h⟩
-  simp only at h
-  simp only [mem_top, true_and, iff_true]
-  use u, v
-  rw [mk'_eq_iff, h]
-
 lemma localized'_sup :
     localized' S_R S f (p ⊔ q) = localized' S_R S f p ⊔ localized' S_R S f q := by
   ext x
@@ -144,34 +126,6 @@ lemma localized'_inf :
     constructor
     · exact ⟨hu.symm ▸ smul_mem _ _ <| smul_mem _ _ hminp, smul_mem _ _ <| smul_mem _ _ hninq⟩
     · exact ⟨u * s * t, by rw [mul_assoc, mk'_cancel_left, mk'_cancel_left, hnmk]⟩
-
-lemma localized'_span (s : Set M) : localized' S_R S f (span R s) = span S_R (f '' s) := by
-  ext x
-  rw [mem_localized']
-  constructor
-  all_goals intro h
-  · rcases h with ⟨m, hm, t, hmk⟩
-    rw [← hmk]
-    clear hmk
-    induction' hm using span_induction with a ains a b _ _ hamk hbmk r a _ hamk
-    · rw [← mk'_right_smul_mk'_left S_R]
-      exact smul_mem _ _ <| mem_span.mpr fun p hsub ↦ hsub <| Set.mem_image_of_mem f ains
-    · simp only [mk'_zero, zero_mem]
-    · rw [mk'_add]
-      exact add_mem hamk hbmk
-    · rw [mk'_smul]
-      exact smul_of_tower_mem _ r hamk
-  · induction' h using span_induction with a ains a b _ _ hamk hbmk u a _ hamk
-    · rcases ains with ⟨m, hmin, hm⟩
-      exact ⟨m, mem_span.mpr fun p hsub ↦ hsub hmin, 1, by rw [← hm, mk'_one]⟩
-    · exact ⟨0, zero_mem _, 1, by rw [mk'_one, map_zero]⟩
-    · rcases hamk with ⟨ma, hma, ta, hamk⟩
-      rcases hbmk with ⟨mb, hmb, tb, hbmk⟩
-      exact ⟨tb • ma + ta • mb, add_mem (smul_mem _ _ hma) (smul_mem _ _ hmb),
-        ta * tb, by rw [← mk'_add_mk', hamk, hbmk]⟩
-    · rcases hamk with ⟨ma, hma, ta, hamk⟩
-      rcases IsLocalization.mk'_surjective S u with ⟨r, t, hrmk⟩
-      exact ⟨r • ma, smul_mem _ _ hma, t * ta, by rw [← hrmk, ← hamk, mk'_smul_mk']⟩
 
 end localized'_operation_commutativity
 
