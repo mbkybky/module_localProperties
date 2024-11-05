@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2024 Yi Song. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Yi Song, SiHan Su
+Authors: Yi Song, SiHan Su, Wan Lin, Yongle Hu
 -/
 import Mathlib.Algebra.Module.Submodule.Localization
 
@@ -43,7 +43,8 @@ variable {M N : Type*} [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R 
 variable {P Q : Type*} [AddCommGroup P] [Module R P] [AddCommGroup Q] [Module R Q] [Module S Q][IsScalarTower R S Q]
    (f' : P →ₗ[R] Q) [IsLocalizedModule p f'] {g: M →ₗ[R] P}
 
-lemma localization_injective (h : Function.Injective g) : Function.Injective (LinearMap.extendScalarsOfIsLocalization p S ((IsLocalizedModule.map p f f') g )) := by
+lemma localization_injective (h : Function.Injective g) : Function.Injective
+    (LinearMap.extendScalarsOfIsLocalization p S ((IsLocalizedModule.map p f f') g )) := by
   apply LinearMap.ker_eq_bot.mp
   rw [← LinearMap.localized'_ker_eq_ker_localizedMap, LinearMap.ker_eq_bot.mpr h]
   exact (Submodule.eq_bot_iff (localized' S p f ⊥)).mpr
