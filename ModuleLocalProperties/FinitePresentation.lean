@@ -3,22 +3,14 @@ Copyright (c) 2024 Yi Song. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yi Song, Yongle Hu, Sihan Su
 -/
-import Mathlib.Algebra.Module.FinitePresentation
-import Mathlib.RingTheory.Localization.Finiteness
-import ModuleLocalProperties.Defs
-import ModuleLocalProperties.MissingLemmas.Range
+module
 
-import ModuleLocalProperties.Basic
+public import Mathlib.Algebra.Module.FinitePresentation
+public import Mathlib.Algebra.Module.LocalizedModule.Away
+public import Mathlib.Algebra.Module.LocalizedModule.Submodule
+public import Mathlib.RingTheory.Localization.Finiteness
 
 open Submodule IsLocalizedModule LocalizedModule Ideal IsLocalization
-
-noncomputable def LinearEquiv.extendScalarsOfIsLocalization {R M N : Type*} [CommSemiring R]
-    (S : Submonoid R) (A : Type*) [CommSemiring A] [Algebra R A] [IsLocalization S A]
-    [AddCommMonoid M] [Module R M] [Module A M] [IsScalarTower R A M] [AddCommMonoid N]
-    [Module R N] [Module A N] [IsScalarTower R A N] (f : M ≃ₗ[R] N) : M ≃ₗ[A] N :=
-  LinearEquiv.ofBijective (f.toLinearMap.extendScalarsOfIsLocalization S A)
-  (Function.bijective_iff_has_inverse.mpr ⟨f.symm, Function.leftInverse_iff_comp.mpr
-  ((symm_comp_eq id f).mpr rfl), Function.rightInverse_iff_comp.mpr ((comp_symm_eq id f).mpr rfl)⟩)
 
 noncomputable def submodule_localization_equiv {R M : Type*} [CommRing R] [AddCommGroup M]
     [Module R M] (N : Submodule R M) (S : Submonoid R) :
@@ -52,7 +44,7 @@ lemma finitepresented_of_localization_fintespan {R M : Type*} [CommRing R] [AddC
     := Module.Finite.of_isLocalizedModule (Submonoid.powers g.1) (mkLinearMap _ (Fin n → R))
   apply Module.FinitePresentation.fg_ker f' (LinearMap.range_eq_top.mp ?_)
   have : (localized (Submonoid.powers g.1) (LinearMap.range f)) = LinearMap.range f'
-    := LinearMap.localized'_range_eq_range_localizedMap _ _ _ _
+    := LinearMap.localized'_range_eq_range_localizedMap ..
   rw [← this, LinearMap.range_eq_top.mpr fsur]
   ext x
   have : ∃ m : M, ∃ s : (Submonoid.powers g.1), LocalizedModule.mk m s = x :=
@@ -73,7 +65,7 @@ lemma isNoetherianRing_of_localization_finitespan {R : Type*} [CommRing R](s : F
   (isNoetherianRing_iff_ideal_fg _).mpr <| fun _ => Ideal.fg_of_localizationSpan _ spn <|
   fun r => (isNoetherianRing_iff_ideal_fg _).mp (h r) <| _
 
-section
+namespace Submodule
 
 variable {R M S_M : Type*} (S_R : Type*) [CommRing R] [CommRing S_R] [Algebra R S_R]
     [AddCommGroup M] [Module R M] [AddCommGroup S_M] [Module R S_M] [Module S_R S_M]
@@ -81,9 +73,6 @@ variable {R M S_M : Type*} (S_R : Type*) [CommRing R] [CommRing S_R] [Algebra R 
     (S : Submonoid R) [IsLocalization S S_R]
     (f : M →ₗ[R] S_M) [IsLocalizedModule S f]
     {p q : Submodule R M}
-
-
-namespace Submodule
 
 lemma localized'_of_finite (h : p.FG) : (localized' S_R S f p).FG := by
   rw [fg_def] at h ⊢
@@ -96,5 +85,3 @@ lemma localized'_of_finite (h : p.FG) : (localized' S_R S f p).FG := by
 lemma localized_of_finite (h : p.FG) : (localized S p).FG := localized'_of_finite _ _ _ h
 
 end Submodule
-
-end

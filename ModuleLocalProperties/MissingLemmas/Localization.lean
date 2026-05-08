@@ -3,8 +3,11 @@ Copyright (c) 2024 Yi Song. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yi Song
 -/
-import Mathlib.Algebra.Module.Submodule.Localization
-import Mathlib.RingTheory.Localization.Ideal
+module
+
+public import Mathlib.Algebra.Module.LocalizedModule.Submodule
+public import Mathlib.RingTheory.Localization.Ideal
+
 open nonZeroDivisors
 
 namespace IsLocalization
@@ -26,7 +29,7 @@ lemma nontrivial (h : 0 ∉ S) : Nontrivial S_R := by
 lemma nontrivial_iff : Nontrivial S_R ↔ 0 ∉ S := by
   constructor
   · contrapose!
-    exact fun h ↦ not_nontrivial_iff_subsingleton.mpr <| subsingleton h
+    exact fun h ↦ subsingleton h
   · exact fun h ↦ nontrivial _ _ h
 
 lemma mk'_mem_nonZeroDivisors (h : 0 ∉ S) (r : R) (s : S) (hmk : mk' S_R r s ∈ S_R⁰) : r ≠ 0 := by
